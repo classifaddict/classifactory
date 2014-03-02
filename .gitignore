@@ -1,0 +1,5 @@
+data
+dist
+venv
+project/static
+project/db.sqlite3
