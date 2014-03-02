@@ -69,12 +69,12 @@ def topconcepts(request):
             dynatree['title'] = _get_titles_flat(t)
             children = []
             for c in t.narrower.all():
-                child = {}
-                child['isLazy'] = True
-                child['isFolder'] = True
-                child['key'] = c.id
-                child['title'] = _get_titles_flat(c)
-                children.append(child)
+                children.append({
+                    'isLazy': True,
+                    'isFolder': True,
+                    'key': c.id,
+                    'title': _get_titles_flat(c)
+                })
             dynatree['children'] = children
         return JSONResponse(dynatree)
 
@@ -97,15 +97,25 @@ def concept(request, pk):
             #dynatree.append({'title': _get_definition_flat(concept), 'addClass': 'ws-wrap', 'noLink': True})
             dynatree.extend(_get_definition(concept))
         for c in concept.narrower.all():
-            child = {}
-            child['isLazy'] = True
-            child['key'] = c.id
-            child['isFolder'] = True
-            if c.depth == 5 and c.definition.count():
-                # Guidance heading
-                child['title'] = _get_titles_flat(c)
+            if c.depth == 5 and not c.definition.count():
+                # Avoid group range without heading
+                for cc in c.narrower.all():
+                    dynatree.append({
+                        'key': cc.id,
+                        'isLazy': True,
+                        'isFolder': True,
+                        'title': cc.label
+                    })
             else:
-                child['title'] = c.label #+ ' ' + _get_titles_flat(c)
-
-            dynatree.append(child)
+                child = {
+                    'key': c.id,
+                    'isLazy': True,
+                    'isFolder': True
+                }
+                if c.depth == 5:
+                    # Guidance heading
+                    child['title'] = _get_titles_flat(c)
+                else:
+                    child['title'] = c.label #+ ' ' + _get_titles_flat(c)
+                dynatree.append(child)
         return JSONResponse(dynatree)
