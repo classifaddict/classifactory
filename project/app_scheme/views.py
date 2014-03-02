@@ -17,8 +17,39 @@ class JSONResponse(HttpResponse):
         super(JSONResponse, self).__init__(content, **kwargs)
 
 
-def _get_definition(concept):
+def _get_titles_flat(concept):
     return '; '.join([d.text for d in concept.definition.all()])
+
+
+def _get_definition_flat(concept):
+    definitions = []
+    for d in concept.definition.all():
+        definition = d.text
+        if d.references.count():
+            definition += ' (' + '; '.join([r.text for r in d.references.all()]) + ')'
+        definitions.append(definition)
+    return '; '.join(definitions)
+
+
+def _get_definition(concept):
+    definitions = []
+    for d in concept.definition.all():
+        definition = {
+            'title': d.text,
+            'addClass': 'ws-wrap',
+            'noLink': True,
+            'expand': True
+        }
+        if d.references.count():
+            definition['children'] = []
+            for r in d.references.all():
+                definition['children'].append({
+                    'title': r.text,
+                    'addClass': 'ws-wrap',
+                    'noLink': True
+                })
+        definitions.append(definition)
+    return definitions
 
 
 def home(request):
@@ -35,14 +66,14 @@ def topconcepts(request):
         dynatree = {}
         for t in topconcepts:
             dynatree['isFolder'] = True
-            dynatree['title'] = _get_definition(t)
+            dynatree['title'] = _get_titles_flat(t)
             children = []
             for c in t.narrower.all():
                 child = {}
                 child['isLazy'] = True
                 child['isFolder'] = True
                 child['key'] = c.id
-                child['title'] = _get_definition(c)
+                child['title'] = _get_titles_flat(c)
                 children.append(child)
             dynatree['children'] = children
         return JSONResponse(dynatree)
@@ -62,7 +93,9 @@ def concept(request, pk):
         dynatree = []
         if concept.depth not in [2, 5] and concept.definition.count():
             # Not a subsection, guidance heading nor group range without heading
-        	dynatree.append({'title': _get_definition(concept), 'addClass': 'ws-wrap', 'noLink': True})
+            #dynatree.append({'title': _get_titles_flat(concept), 'addClass': 'ws-wrap', 'noLink': True})
+            #dynatree.append({'title': _get_definition_flat(concept), 'addClass': 'ws-wrap', 'noLink': True})
+            dynatree.extend(_get_definition(concept))
         for c in concept.narrower.all():
             child = {}
             child['isLazy'] = True
@@ -70,9 +103,9 @@ def concept(request, pk):
             child['isFolder'] = True
             if c.depth == 5 and c.definition.count():
                 # Guidance heading
-                child['title'] = _get_definition(c)
+                child['title'] = _get_titles_flat(c)
             else:
-                child['title'] = c.label
+                child['title'] = c.label #+ ' ' + _get_titles_flat(c)
 
             dynatree.append(child)
         return JSONResponse(dynatree)
