@@ -10,12 +10,12 @@ admin.site.register(Concept, ConceptAdmin)
 
 
 class DefinitionAdmin(admin.ModelAdmin):
-    list_display = ('concept', 'text')
+    list_display = ('concept', 'lang', 'text')
 
 admin.site.register(Definition, DefinitionAdmin)
 
 
 class ReferenceAdmin(admin.ModelAdmin):
-    list_display = ('definition', 'text')
+    list_display = ('definition', 'lang', 'text')
 
 admin.site.register(Reference, ReferenceAdmin)

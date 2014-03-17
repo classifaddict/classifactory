@@ -77,19 +77,16 @@ class IpcEntry:
         return texts
 
     def get_titles(self):
-        xpaths = {'en': self.tree.getpath(self.entry) + '/textBody/title/titlePart'}
-        if len(self.tree.xpath(xpaths['en'])):
-            #xpaths['fr'] = xpaths['en'].replace('/en/', '/fr/')
-            self.titles = {}
-            for lang, xpath in xpaths.iteritems():
-                self.titles[lang] = []
-                for tp in self.tree.xpath(xpath):
-                    title = [self.get_texts(tp[0])]
-                    if len(tp) > 1:
-                        title.append([self.get_texts(ref) for ref in tp[1:]])
-                    else:
-                        title.append([])
-                    self.titles[lang].append(title)
+        titleparts = self.entry.xpath('./textBody/title/titlePart')
+        if len(titleparts):
+            self.titles = []
+            for tp in titleparts:
+                title = [self.get_texts(tp[0])]
+                if len(tp) > 1:
+                    title.append([self.get_texts(ref) for ref in tp[1:]])
+                else:
+                    title.append([])
+                self.titles.append(title)
 
     def get_xml_titles(self):
         title_list = ''
@@ -141,34 +138,36 @@ class IpcEntry:
             self.children = self.entry.xpath('./ipcEntry[@kind!="t" and @kind!="n" and @kind!="g" and @kind!="i"]')
 
 
-def db_load_concept(entry, parent=None):
-        #import ipdb; ipdb.set_trace()
-        cObj = Concept(
+def db_load_concept(entry, lang, parent=None):
+        cObj, created = Concept.objects.get_or_create(
             notation=entry.id,
             label=entry.label,
             depth=entry.depth,
         )
         cObj.save()
 
-        if parent is not None:
+        if created and parent is not None:
             cObj.parent = parent
 
         if entry.titles is not None:
-            for title in entry.titles['en']:
+            for title in entry.titles:
                 dObj = Definition(
                     concept=cObj,
-                    text=title[0]
+                    text=title[0],
+                    lang=lang
                 )
                 dObj.save()
                 for ref in title[1]:
                     rObj = Reference(
                         definition=dObj,
-                        text=ref
+                        text=ref,
+                        lang=lang
                     )
                     rObj.save()
                 dObj.save()
         cObj.save()
         return cObj
+
 
 class IpcScheme:
     def __init__(self, version):
@@ -180,7 +179,7 @@ class IpcScheme:
     def get_tree(self):
         if self.tree is None:
             self.tree = etree.parse(os.path.join(settings.DATA_DIR, 'ipcr_scheme_%s.xml' % self.version))
-            self.sections = self.tree.xpath('//en')[0][0]
+            #import ipdb; ipdb.set_trace()
 
     def init_graph(self):
         self.graph = Graph()
@@ -225,25 +224,28 @@ class IpcScheme:
         self.graph.add((scheme, RDF.type, SKOS.ConceptScheme))
 
         self.get_tree()
-        for section in self.sections:
+        sections = self.tree.xpath('//en')[0][0]
+        for section in sections:
             s = self.get_entry(section)
             concept = self.add_concept(s)
             self.graph.add((scheme, SKOS.hasTopConcept, concept))
             self.recurse_collections(s, concept)
 
-    def recurse_entries(self, entry, parent):
+    def recurse_entries(self, entry, lang, parent):
         if len(entry.children):
             for child in entry.children:
                 e = self.get_entry(child)
-                cObj = db_load_concept(e, parent)
-                self.recurse_entries(e, cObj)
+                cObj = db_load_concept(e, lang, parent)
+                self.recurse_entries(e, lang, cObj)
 
     def db_load(self):
         self.get_tree()
-        for section in self.sections:
-            entry = self.get_entry(section)
-            sObj = db_load_concept(entry)
-            self.recurse_entries(entry, sObj)
+        for lang in ['en', 'fr']:
+            sections = self.tree.xpath('//' + lang)[0][0]
+            for section in sections:
+                entry = self.get_entry(section)
+                sObj = db_load_concept(entry, lang)
+                self.recurse_entries(entry, lang, sObj)
 
     def save_graph(self):
         fp = open(os.path.join(settings.DATA_DIR, 'ipc_%s.rdf' % self.version), 'w')

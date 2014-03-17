@@ -16,11 +16,11 @@
     $("#tree1").dynatree({
       //generateIds: true,
       initAjax: {
-        url: "/scheme/topconcepts/"
-        },
+        url: "/scheme/topconcepts/?lang=en"
+      },
       onLazyRead: function(node){
         node.appendAjax({
-          url: "/scheme/concept/" + node.data.key + "/",
+          url: "/scheme/concept/" + node.data.key + "/?lang=en",
           success: function(node) {$("#tree2").dynatree("getTree").getNodeByKey(node.data.key).expand(true);}
         });
       },
@@ -35,11 +35,11 @@
     $("#tree2").dynatree({
       //generateIds: true,
       initAjax: {
-        url: "/scheme/topconcepts/"
-        },
+        url: "/scheme/topconcepts/?lang=fr"
+      },
       onLazyRead: function(node){
         node.appendAjax({
-          url: "/scheme/concept/" + node.data.key + "/",
+          url: "/scheme/concept/" + node.data.key + "/?lang=fr",
           success: function(node) {$("#tree1").dynatree("getTree").getNodeByKey(node.data.key).expand(true);}
         });
       },
@@ -51,7 +51,7 @@
 </script>
 </head>
 <body>
-<body><table><tr>
+<body><table width="100%"><tr>
   <td valign="top"><div id="tree1"></div></td>
   <td valign="top"><div id="tree2"></div></td>
 </tr></table></body>

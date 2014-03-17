@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf import settings
+#from django.conf import settings
 from mptt.models import MPTTModel, TreeForeignKey
 
 # IPC/SKOS mapping
@@ -16,25 +16,27 @@ class Concept(MPTTModel):
     label = models.CharField(max_length=39)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='narrower')
     depth = models.IntegerField()
-    
+
     def __unicode__(self):
-        return self.label
+        return self.notation
 
     class MPTTMeta:
         order_insertion_by = ['notation']
 
 
 class Definition(models.Model):
-    concept = models.ForeignKey('Concept', null=True, blank=True, related_name='definition')
+    concept = models.ForeignKey('Concept', related_name='definition')
+    lang = models.CharField(max_length=2)
     text = models.TextField()
-    
+
     def __unicode__(self):
         return self.text
 
 
 class Reference(models.Model):
-    definition = models.ForeignKey('Definition', null=True, blank=True, related_name='references')
+    definition = models.ForeignKey('Definition', related_name='references')
+    lang = models.CharField(max_length=2)
     text = models.TextField()
-    
+
     def __unicode__(self):
         return self.text
