@@ -117,6 +117,8 @@ def concept(request, pk):
                 if c.depth == 5:
                     # Guidance heading
                     child['title'] = _get_titles_flat(c, lang)
+                    child['addClass'] = 'ws-wrap'
+                    child['noLink'] = True
                 else:
                     child['title'] = c.label #+ ' ' + _get_titles_flat(c)
                 dynatree.append(child)
