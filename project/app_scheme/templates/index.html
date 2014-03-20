@@ -26,9 +26,14 @@
         });
       },
       onExpand: function(flag, node) {
-        console.log(node.data.key);
         $("#tree2").dynatree("getTree").getNodeByKey(node.data.key).expand(flag);
       }
+    });
+    $("#tree1 ul").scroll(function() {
+      //var activ1=$("#tree1").dynatree("getTree").getActiveNode();
+      //var activ2=$("#tree2").dynatree("getTree").getNodeByKey(activ1.data.key);
+      //console.log($(activ1.li).offset().top);
+      $('#tree2 ul').scrollTop($('#tree1 ul').scrollTop() + 30);
     });
   });
 
@@ -48,12 +53,15 @@
         $("#tree1").dynatree("getTree").getNodeByKey(node.data.key).expand(flag);
       }
     });
+    $("#tree2 ul").scroll(function() {
+      $('#tree1 ul').scrollTop($('#tree2 ul').scrollTop() - 30);
+    });
   });
 </script>
 </head>
 <body>
 <body><table><tr>
-  <td valign="top"><div id="tree1" style="width:550px;height:750px"></div></td>
-  <td valign="top"><div id="tree2" style="width:550px;height:750px"></div></td>
+  <td valign="top"><div id="tree1" style="width:550px;height:700px"></div></td>
+  <td valign="top"><div id="tree2" style="width:550px;height:700px"></div></td>
 </tr></table></body>
 </html>
