@@ -11,6 +11,17 @@
 <style>
   span.ws-wrap span.dynatree-title { white-space: normal; }
   ul.dynatree-container { padding-right: 40px; }
+  span.dynatree-selected a
+  {
+    color: red;
+    font-style: italic;
+  }
+
+  span.dynatree-active a
+  {
+    background-color: white !important;
+    color: red !important; /* @ IE6 */
+  }
 </style>
 <script type="text/javascript">
   $(function(){
