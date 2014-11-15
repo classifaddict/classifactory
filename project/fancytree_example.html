@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<script src="http://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
-	<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
-	<link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
-	<script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
-	<script>
-	$(function(){
-	$("#tree").fancytree({
-	  source: [
-	    {title: "Section A - HUMAN NECESSITIES", folder: true, children: [
-	      {title: "AGRICULTURE", folder: true, children: [
-		      {title: "A01 - AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", folder: true}
-		    ]},
-	      {title: "FOODSTUFFS; TOBACCO", folder: true, children: [
-		      {title: "A21 - BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", folder: true}
-		    ]},
-	    ]},
-	    {title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", folder: true, children: [
-	      {title: "Node 2.1", myOwnAttr: "abc"},
-	      {title: "Node 2.2"}
-	    ]}
-	  ],
-	  extensions: ["table", "gridnav"],
+    <script src="http://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+    <link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
+    <script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
+    <script>
+    $(function(){
+    $("#tree").fancytree({
+      source: [
+        {title: "Section A - HUMAN NECESSITIES", folder: true, children: [
+          {title: "AGRICULTURE", folder: true, children: [
+              {title: "A01 - AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", folder: true}
+        ]},
+          {title: "FOODSTUFFS; TOBACCO", folder: true, children: [
+              {title: "A21 - BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", folder: true}
+            ]},
+        ]},
+        {title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", folder: true, children: [
+          {title: "Node 2.1", myOwnAttr: "abc"},
+          {title: "Node 2.2"}
+        ]}
+      ],
+      extensions: ["table", "gridnav"],
     activeVisible: true, // Make sure, active nodes are visible (expanded).
     aria: true, // Enable WAI-ARIA support.
     autoActivate: true, // Automatically activate a node when it is focused (using keys).
     icons: false,
     debugLevel: 2 // 0:quiet, 1:normal, 2:debug
-	});
-	});
+    });
+    });
 </script>
 </head>
 <body>
-	<div id="tree"></div>
+    <div id="tree"></div>
 </body>
 </html>
