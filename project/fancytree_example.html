@@ -5,19 +5,29 @@
 	<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
 	<link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
 	<script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
+	<style type="text/css">
+		body {font-family: Arial, Helvetica, sans-serif;}
+		.section, .section span {
+			color: #ce6918;
+			font-weight: bold;
+		}
+		.klass, .klass span {
+			background-color: #FFCB95;
+		}
+	</style>
 	<script>
 	$(function(){
 		$("#tree").fancytree({
 			source: [
-				{title: "Section A - HUMAN NECESSITIES", folder: true, children: [
+				{title: "Section A - HUMAN NECESSITIES", symbol: "A", kind:"section", folder: true, children: [
 					{title: "AGRICULTURE", folder: true, children: [
-						{title: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", symbol: "A01", folder: true}
+						{title: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", symbol: "A01", kind:"klass", folder: true}
 					]},
 					{title: "FOODSTUFFS; TOBACCO", folder: true, children: [
-						{title: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", symbol: "A21", folder: true}
+						{title: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", symbol: "A21", kind:"klass", folder: true}
 					]},
 				]},
-				{title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", folder: true, children: [
+				{title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", symbol: "B", kind:"section", folder: true, children: [
 					{title: "Node 2.1", myOwnAttr: "abc"},
 					{title: "Node 2.2"}
 				]}
@@ -29,13 +39,14 @@
 			debugLevel: 2, // 0:quiet, 1:normal, 2:debug
 			extensions: ["table", "gridnav"],
 			table: {
-				indentation: 10,
+				indentation: 0,
 				nodeColumnIdx: 2
 			},
 			renderColumns: function(event, data) {
 				var node = data.node,
 					$tdList = $(node.tr).find(">td");
-				$tdList.eq(1).text(node.data.symbol);
+				$tdList.eq(1).addClass(node.data.kind).text(node.data.symbol);
+				$tdList.addClass(node.data.kind);
 			},
 			gridnav: {
 				autofocusInput: false,
