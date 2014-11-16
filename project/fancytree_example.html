@@ -6,28 +6,45 @@
 	<link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
 	<script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
 	<style type="text/css">
-		body {font-family: Arial, Helvetica, sans-serif;}
-		.section, .section span {
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+		}
+		.s, .s span {
 			color: #ce6918;
+			font-size: 16px;
 			font-weight: bold;
 		}
-		.klass, .klass span {
+		td.s {
+			padding-top: 10px;
+		}
+		.t, .t span {
+			color: #ce6918;
+			text-decoration: underline;
+			font-size: 14px;
+			font-weight: bold;
+		}
+		td.t {
+			padding-top: 5px;
+		}
+		.c, .c span {
 			background-color: #FFCB95;
+			font-size: 14px;
+			font-weight: bold;
 		}
 	</style>
 	<script>
 	$(function(){
 		$("#tree").fancytree({
 			source: [
-				{title: "Section A - HUMAN NECESSITIES", symbol: "A", kind:"section", folder: true, children: [
-					{title: "AGRICULTURE", folder: true, children: [
-						{title: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", symbol: "A01", kind:"klass", folder: true}
+				{title: "Section A - HUMAN NECESSITIES", symbol: "A", kind:"s", folder: true, children: [
+					{title: "AGRICULTURE", kind:"t", folder: true, children: [
+						{title: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING", symbol: "A01", kind:"c", folder: true}
 					]},
-					{title: "FOODSTUFFS; TOBACCO", folder: true, children: [
-						{title: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", symbol: "A21", kind:"klass", folder: true}
+					{title: "FOODSTUFFS; TOBACCO", kind:"t", folder: true, children: [
+						{title: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING", symbol: "A21", kind:"c", folder: true}
 					]},
 				]},
-				{title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", symbol: "B", kind:"section", folder: true, children: [
+				{title: "Section B - PERFORMING OPERATIONS; TRANSPORTING", symbol: "B", kind:"s", folder: true, children: [
 					{title: "Node 2.1", myOwnAttr: "abc"},
 					{title: "Node 2.2"}
 				]}
