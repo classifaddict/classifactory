@@ -31,6 +31,10 @@
 			font-size: 14px;
 			font-weight: bold;
 		}
+		.symbol, .symbol span {
+			color: #000000;
+			font-size: 12px;
+		}
 	</style>
 	<script>
 	$(function(){
@@ -62,7 +66,7 @@
 			renderColumns: function(event, data) {
 				var node = data.node,
 					$tdList = $(node.tr).find(">td");
-				$tdList.eq(1).addClass(node.data.kind).text(node.data.symbol);
+				$tdList.eq(1).addClass("symbol").text(node.data.symbol);
 				$tdList.addClass(node.data.kind);
 			},
 			gridnav: {
@@ -74,14 +78,15 @@
 	</script>
 </head>
 <body>
-	<table class="hideborder" id="tree" width="100%">
+	<table id="tree" width="100%">
 		<colgroup>
-			<col width="30px">
-			<col width="50px">
 			<col>
+			<col>
+			<col width="50%">
+			<col width="50%">
 		</colgroup>
 		<thead>
-			<tr> <th> </th> <th> </th> <th></th> </tr>
+			<tr> <th></th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th></th> <th></th> </tr>
 		</thead>
 		<tbody>
 		</tbody>
