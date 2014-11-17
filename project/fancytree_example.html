@@ -60,30 +60,36 @@
 	$(function(){
 		$("#tree").fancytree({
 			source: [
-				{title: "SECTION A - HUMAN NECESSITIES",
+				{title: "",
+				 title1: "SECTION A - HUMAN NECESSITIES",
 				 title2: "SECTION A — NÉCESSITÉS COURANTES DE LA VIE",
 				 symbol: "A", kind:"s", folder: true, children: [
-					{title: "AGRICULTURE",
+					{title: "",
+					 title1: "AGRICULTURE",
 					 title2: "ACTIVITÉS RURALES",
-					 kind:"t",
-					 folder: true, children: [
-						{title: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING",
+					 kind:"t", folder: true, children: [
+						{title: "",
+						 title1: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING",
 						 title2: "AGRICULTURE; SYLVICULTURE; ÉLEVAGE; CHASSE; PIÉGEAGE; PÊCHE",
 						 symbol: "A01", kind:"c", folder: true, children: [
-							{title: '<span class="utitle">PRESERVATION OF BODIES OF HUMANS OR ANIMALS OR PLANTS OR PARTS THEREOF</span> (preservation of food or foodstuff A23); <span class="utitle">BIOCIDES, e.g. AS DISINFECTANTS, AS PESTICIDES OR AS HERBICIDES</span> (preparations for medical, dental or toilet purposes which kill or prevent the growth or proliferation of unwanted organisms A61K); <span class="utitle">PEST REPELLANTS OR ATTRACTANTS; PLANT GROWTH REGULATORS</span> (mixtures of pesticides with fertilisers C05G)',
+							{title: '',
+							 title1: '<span class="utitle">PRESERVATION OF BODIES OF HUMANS OR ANIMALS OR PLANTS OR PARTS THEREOF</span> (preservation of food or foodstuff A23); <span class="utitle">BIOCIDES, e.g. AS DISINFECTANTS, AS PESTICIDES OR AS HERBICIDES</span> (preparations for medical, dental or toilet purposes which kill or prevent the growth or proliferation of unwanted organisms A61K); <span class="utitle">PEST REPELLANTS OR ATTRACTANTS; PLANT GROWTH REGULATORS</span> (mixtures of pesticides with fertilisers C05G)',
 							 title2: '<span class="utitle">CONSERVATION DE CORPS HUMAINS OU ANIMAUX OU DE VÉGÉTAUX, OU DE PARTIES DE CEUX-CI</span> (conservation des aliments ou des produits alimentaires A23); <span class="utitle">BIOCIDES, p.ex. EN TANT QUE DÉSINFECTANTS, PESTICIDES OU HERBICIDES</span> (préparations destinées à un usage médical, dentaire ou pour la toilette, qui tuent les organismes indésirables ou empêchent leur croissance ou leur prolifération A61K); <span class="utitle">PRODUITS REPOUSSANT OU ATTIRANT LES ANIMAUX NUISIBLES; RÉGULATEURS DE CROISSANCE DES VÉGÉTAUX</span> (mélanges de pesticides avec des engrais C05G)',
 							 symbol: "A01N", kind: "u", folder: true}
 						]}
 					]},
-					{title: "FOODSTUFFS; TOBACCO",
+					{title: "",
+					 title1: "FOODSTUFFS; TOBACCO",
 					 title2: "ALIMENTATION; TABAC",
 					 kind:"t", folder: true, children: [
-						{title: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING",
+						{title: "",
+						 title1: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING",
 						 title2: "CUISSON AU FOUR; MATÉRIEL POUR LA PRÉPARATION OU LE TRAITEMENT DE LA PÂTE; PÂTE À CUIRE [8]",
 						 symbol: "A21", kind:"c", folder: true}
 					]},
 				]},
-				{title: "SECTION B - PERFORMING OPERATIONS; TRANSPORTING",
+				{title: "",
+				 title1: "SECTION B - PERFORMING OPERATIONS; TRANSPORTING",
 				 title2: "SECTION B — TECHNIQUES INDUSTRIELLES; TRANSPORTS",
 				 symbol: "B", kind:"s", folder: true, children: []}
 			],
@@ -101,7 +107,8 @@
 				var node = data.node,
 					$tdList = $(node.tr).find(">td");
 				$tdList.eq(1).addClass("symbol").text(node.data.symbol);
-				$tdList.eq(3).html(node.data.title2);
+				$tdList.eq(3).html(node.data.title1);
+				$tdList.eq(4).html(node.data.title2);
 				$tdList.addClass(node.data.kind);
 			},
 			gridnav: {
@@ -117,11 +124,12 @@
 		<colgroup>
 			<col>
 			<col>
+			<col>
 			<col width="50%">
 			<col width="50%">
 		</colgroup>
 		<thead>
-			<tr> <th></th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th></th> <th></th> </tr>
+			<tr> <th></th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th></th> <th></th> </tr>
 		</thead>
 		<tbody>
 		</tbody>
