@@ -11,46 +11,46 @@
 		body {
 			font-family: Arial, Helvetica, sans-serif;
 		}
-		.s, .s span {
+		.s {
 			color: #ce6918;
 			font-size: 16px;
 			font-weight: bold;
 			vertical-align: top;
 		}
 		td.s {
-			padding-top: 10px;
+			padding-top: 20px;
 		}
-		.t, .t span {
+		.t {
 			color: #ce6918;
 			font-size: 14px;
 			font-weight: bold;
 			vertical-align: top;
 		}
 		td.t {
-			padding-top: 5px;
+			padding-top: 15px;
 		}
-		.c, .c span {
+		.c {
 			background-color: #FFCB95;
 			font-size: 14px;
 			font-weight: bold;
 			vertical-align: top;
 		}
-		.c, .c span {
-			background-color: #FFCB95;
-			font-size: 14px;
-			font-weight: bold;
-			vertical-align: top;
+		td.c {
+			padding-top: 10px;
 		}
-		.u, .u span {
+		.u {
 			background-color: #FFDEB3;
 			font-size: 12px;
 			vertical-align: top;
+		}
+		td.u {
+			padding-top: 5px;
 		}
 		span.utitle {
 			font-size: 14px;
 			font-weight: bold;
 		}
-		.symbol, .symbol span {
+		.symbol {
 			color: #000000;
 			font-size: 12px;
 			font-weight: bold;
@@ -62,7 +62,7 @@
 		$("#tree").fancytree({
 			source: [
 				{title: "",
-				 title1: "SECTION A - HUMAN NECESSITIES",
+				 title1: "SECTION A — HUMAN NECESSITIES",
 				 title2: "SECTION A — NÉCESSITÉS COURANTES DE LA VIE",
 				 symbol: "A", kind:"s", folder: true, children: [
 					{title: "",
@@ -90,7 +90,7 @@
 					]},
 				]},
 				{title: "",
-				 title1: "SECTION B - PERFORMING OPERATIONS; TRANSPORTING",
+				 title1: "SECTION B — PERFORMING OPERATIONS; TRANSPORTING",
 				 title2: "SECTION B — TECHNIQUES INDUSTRIELLES; TRANSPORTS",
 				 symbol: "B", kind:"s", folder: true, children: []}
 			],
