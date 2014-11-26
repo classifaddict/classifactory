@@ -50,60 +50,105 @@
 			font-size: 14px;
 			font-weight: bold;
 		}
-		.symbol {
-			color: #000000;
+		.m {
+			background-color: #FFEFDE;
 			font-size: 12px;
 			font-weight: bold;
+			vertical-align: top;
+		}
+		td.m {
+			padding-top: 5px;
+		}
+		.sg {
+			font-size: 12px;
+			vertical-align: top;
+		}
+		td.symbol {
+			color: #000000;
+			font-size: 12px;
 			vertical-align: top;
 		}
 		.n {
 			font-size: 12px;
 			vertical-align: top;
 		}
+		div.cpc ul {
+			background-color: #D6EBF5;
+		}
+		ul.fancytree-container ul {
+			padding: 0 0 0 0;
+		}
+		ul.fancytree-container li {
+			list-style: none inside none;
+		}
+		span.fancytree-title {white-space: normal;}
+		/*table.cpc {
+			background-color: #D6EBF5;
+		}*/
 	</style>
 	<script>
 	$(function(){
 		$("#tree").fancytree({
 			source: [
-				{title: "",
+				{title: "A",
 				 title1: "SECTION A — HUMAN NECESSITIES",
 				 title2: "SECTION A — NÉCESSITÉS COURANTES DE LA VIE",
-				 symbol: "A", kind:"s", folder: true, children: [
-					{title: "",
+				 symbol: "", kind:"s", folder: true, children: [
+					{title: "&nbsp;",
 					 title1: "AGRICULTURE",
 					 title2: "ACTIVITÉS RURALES",
-					 kind:"t", folder: true, children: [
-						{title: "",
+					 kind:"t", folder: true,  expanded: true, children: [
+						{title: "A01",
 						 title1: "AGRICULTURE; FORESTRY; ANIMAL HUSBANDRY; HUNTING; TRAPPING; FISHING",
 						 title2: "AGRICULTURE; SYLVICULTURE; ÉLEVAGE; CHASSE; PIÉGEAGE; PÊCHE",
-						 symbol: "A01", kind:"c", folder: true, children: [
-							{title: '',
+						 symbol: "", kind:"c", folder: true, children: [
+							{title: "A01N",
 							 title1: '<span class="utitle">PRESERVATION OF BODIES OF HUMANS OR ANIMALS OR PLANTS OR PARTS THEREOF</span> (preservation of food or foodstuff A23); <span class="utitle">BIOCIDES, e.g. AS DISINFECTANTS, AS PESTICIDES OR AS HERBICIDES</span> (preparations for medical, dental or toilet purposes which kill or prevent the growth or proliferation of unwanted organisms A61K); <span class="utitle">PEST REPELLANTS OR ATTRACTANTS; PLANT GROWTH REGULATORS</span> (mixtures of pesticides with fertilisers C05G)',
 							 title2: '<span class="utitle">CONSERVATION DE CORPS HUMAINS OU ANIMAUX OU DE VÉGÉTAUX, OU DE PARTIES DE CEUX-CI</span> (conservation des aliments ou des produits alimentaires A23); <span class="utitle">BIOCIDES, p.ex. EN TANT QUE DÉSINFECTANTS, PESTICIDES OU HERBICIDES</span> (préparations destinées à un usage médical, dentaire ou pour la toilette, qui tuent les organismes indésirables ou empêchent leur croissance ou leur prolifération A61K); <span class="utitle">PRODUITS REPOUSSANT OU ATTIRANT LES ANIMAUX NUISIBLES; RÉGULATEURS DE CROISSANCE DES VÉGÉTAUX</span> (mélanges de pesticides avec des engrais C05G)',
-							 symbol: "A01N", kind: "u", folder: true, children: [
+							 symbol: "", kind: "u", folder: true,  expanded: true, children: [
 							 	{
-							 		title: '',
+							 		title: "",
 							 		title1: '<p>Note(s)</p><ol><li>This subclass covers: [3]<ul><li>compositions, physical forms, methods of application of specific materials or the use of single compounds or compositions; [7]</li><li>chemosterilants for the sexual sterilisation of invertebrates, e.g. insects (sex sterilants for other purposes A61K). [7]</li></ul></li></ol>',
 							 		title2: '<p>Note(s)</p><ol><li>La présente sous-classe couvre: [3]<ul><li>les compositions, les présentations, les méthodes d\'application de substances déterminées, ou l\'utilisation de compositions ou de composés utilisés seuls; [7]</li><li>les stérilisants chimiques pour la stérilisation sexuelle des invertébrés, p.ex. des insectes (stérilisants sexuels à d\'autres fins A61K). [7]</li></ul></li></ol>',
 							 		kind: 'n'
+							 	},
+							 	{
+									title: "A01N&nbsp;1/00",
+									title1: 'Preservation of bodies of humans or animals, or parts thereof',
+									title2: 'Conservation de corps humains ou animaux, ou de parties de ceux-ci',
+							 		kind: 'm', folder: true,  expanded: true, children: [
+										{
+											title: "A01N&nbsp;1/02",
+											title1: '· Preservation of living parts',
+											title2: '· Conservation de parties vivantes',
+											kind: 'sg', folder: true,  expanded: true, children: [
+												{
+													title: "&nbsp;",
+													cpc: [{title: 'A01N&nbsp;1/0205 · · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N&nbsp;1/021 · · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
+													//cpc: [{title: 'A01N&nbsp;1/0205', title1: '· · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N&nbsp;1/021', title1: '· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
+													kind: 'sg'
+												}
+											]
+										}
+							 		]
 							 	}
 							 ]}
 						]}
 					]},
-					{title: "",
+					{title: "&nbsp;",
 					 title1: "FOODSTUFFS; TOBACCO",
 					 title2: "ALIMENTATION; TABAC",
-					 kind:"t", folder: true, children: [
-						{title: "",
+					 kind:"t", folder: true,  expanded: true, children: [
+						{title: "A21",
 						 title1: "BAKING; EQUIPMENT FOR MAKING OR PROCESSING DOUGHS; DOUGHS FOR BAKING",
 						 title2: "CUISSON AU FOUR; MATÉRIEL POUR LA PRÉPARATION OU LE TRAITEMENT DE LA PÂTE; PÂTE À CUIRE [8]",
-						 symbol: "A21", kind:"c", folder: true}
+						 symbol: "", kind:"c", folder: true}
 					]},
 				]},
-				{title: "",
+				{title: "B",
 				 title1: "SECTION B — PERFORMING OPERATIONS; TRANSPORTING",
 				 title2: "SECTION B — TECHNIQUES INDUSTRIELLES; TRANSPORTS",
-				 symbol: "B", kind:"s", folder: true, children: []}
+				 symbol: "", kind:"s", folder: true, children: []}
 			],
 			activeVisible: true, // Make sure, active nodes are visible (expanded).
 			aria: true, // Enable WAI-ARIA support.
@@ -113,14 +158,36 @@
 			extensions: ["table", "gridnav"],
 			table: {
 				indentation: 0,
-				nodeColumnIdx: 2
+				nodeColumnIdx: 1
 			},
 			renderColumns: function(event, data) {
 				var node = data.node,
 					$tdList = $(node.tr).find(">td");
-				$tdList.eq(1).addClass("symbol").text(node.data.symbol);
-				$tdList.eq(3).html(node.data.title1);
-				$tdList.eq(4).html(node.data.title2);
+				
+				if (node.data.cpc) {
+					$tdList.eq(1).prop("colspan", 2).next().remove();
+					$tdList.eq(1).html('<div class="cpc"></div>').find('div').fancytree({source: node.data.cpc, activeVisible: true, icons: false});
+					/*$tdList.eq(1).html('<table width="100%" class="cpc"><colgroup><col><col width="100%"></colgroup><thead><tr> <th>blablablablablabla</th> <th> </th></tr></thead><tbody></tbody></table>').find('table').fancytree({
+						source: node.data.cpc,
+						activeVisible: true,
+						icons: false,
+						extensions: ["table"],
+						table: {
+							indentation: 0,
+							nodeColumnIdx: 0
+						},
+						renderColumns: function(event, data2) {
+							var node2 = data2.node,
+								$tdList2 = $(node2.tr).find(">td");
+							$tdList2.eq(1).html(node2.data.title1);
+						}
+					});*/
+				} else {
+					$tdList.eq(1).addClass("symbol");
+					$tdList.eq(2).html(node.data.title1);
+				}
+				
+				$tdList.eq(3).html(node.data.title2);
 				$tdList.addClass(node.data.kind);
 			},
 			gridnav: {
@@ -136,12 +203,11 @@
 		<colgroup>
 			<col>
 			<col>
-			<col>
 			<col width="50%">
 			<col width="50%">
 		</colgroup>
 		<thead>
-			<tr> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th></th> <th></th> </tr>
+			<tr> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th> <th></th> <th></th> </tr>
 		</thead>
 		<tbody>
 		</tbody>
