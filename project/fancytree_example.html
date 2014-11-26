@@ -72,6 +72,9 @@
 			font-size: 12px;
 			vertical-align: top;
 		}
+		div.cpc {
+			display: none;
+		}
 		div.cpc ul {
 			background-color: #D6EBF5;
 		}
@@ -87,6 +90,10 @@
 		}*/
 	</style>
 	<script>
+	function showCPC(symbol) {
+		$("#"+symbol).toggle();
+	}
+	
 	$(function(){
 		$("#tree").fancytree({
 			source: [
@@ -113,20 +120,20 @@
 							 		kind: 'n'
 							 	},
 							 	{
-									title: "A01N&nbsp;1/00",
+									title: "A01N 1/00",
 									title1: 'Preservation of bodies of humans or animals, or parts thereof',
 									title2: 'Conservation de corps humains ou animaux, ou de parties de ceux-ci',
-							 		kind: 'm', folder: true,  expanded: true, children: [
+							 		kind: 'm', symbol: "A01N0001010000", folder: true, expanded: true, children: [
 										{
-											title: "A01N&nbsp;1/02",
+											title: "A01N 1/02",
 											title1: '· Preservation of living parts',
 											title2: '· Conservation de parties vivantes',
-											kind: 'sg', folder: true,  expanded: true, children: [
+											kind: 'sg', symbol: "A01N0001020000", folder: true, expanded: true, hascpc: true, children: [
 												{
 													title: "&nbsp;",
-													cpc: [{title: 'A01N&nbsp;1/0205 · · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N&nbsp;1/021 · · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
-													//cpc: [{title: 'A01N&nbsp;1/0205', title1: '· · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N&nbsp;1/021', title1: '· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
-													kind: 'sg'
+													cpc: [{title: 'A01N 1/0205 · · Chemical aspects',  kind: 'sg', folder: true,  expanded: true, children: [{title: 'A01N 1/021 · · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids ', kind: 'sg'}]}],
+													//cpc: [{title: 'A01N 1/0205', title1: '· · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N 1/021', title1: '· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
+													kind: 'sg', parent: "A01N0001020000"
 												}
 											]
 										}
@@ -166,7 +173,7 @@
 				
 				if (node.data.cpc) {
 					$tdList.eq(1).prop("colspan", 2).next().remove();
-					$tdList.eq(1).html('<div class="cpc"></div>').find('div').fancytree({source: node.data.cpc, activeVisible: true, icons: false});
+					$tdList.eq(1).html('<div id="' + node.data.parent + '" class="cpc"></div>').find('div').fancytree({source: node.data.cpc, icons: false});
 					/*$tdList.eq(1).html('<table width="100%" class="cpc"><colgroup><col><col width="100%"></colgroup><thead><tr> <th>blablablablablabla</th> <th> </th></tr></thead><tbody></tbody></table>').find('table').fancytree({
 						source: node.data.cpc,
 						activeVisible: true,
@@ -183,6 +190,9 @@
 						}
 					});*/
 				} else {
+					if (node.data.hascpc) {
+						$tdList.eq(0).html('<a href="#" onclick="javascript:showCPC(\'' + node.data.symbol + '\')">CPC</a>');
+					}
 					$tdList.eq(1).addClass("symbol");
 					$tdList.eq(2).html(node.data.title1);
 				}
@@ -212,5 +222,11 @@
 		<tbody>
 		</tbody>
 	</table>
+	<p>Il existe 3 pistes possibles pour l'affichage des sous-arbres CPC et FI :</p>
+	<ol>
+		<li>FancyTree table: le bouton collapse est invisible et ne fonctionne pas. Grid nav ne fonctionne pas.</li>
+		<li>FancyTree liste: le bouton collapse est invisible mais fonctionne. Il est très difficile, voir impossble, de respecter la présentation</li>
+		<li>HTML table: complétement statique.</li>
+	</ol>
 </body>
 </html>
