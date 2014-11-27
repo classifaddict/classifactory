@@ -18,16 +18,17 @@
 			vertical-align: top;
 		}
 		td.s {
-			padding-top: 20px;
+			padding-bottom: 20px;
 		}
 		.t {
 			color: #ce6918;
 			font-size: 14px;
 			font-weight: bold;
+			text-decoration: underline;
 			vertical-align: top;
 		}
 		td.t {
-			padding-top: 15px;
+			padding-bottom: 15px;
 		}
 		.c {
 			background-color: #FFCB95;
@@ -36,7 +37,7 @@
 			vertical-align: top;
 		}
 		td.c {
-			padding-top: 10px;
+			padding-bottom: 10px;
 		}
 		.u {
 			background-color: #FFDEB3;
@@ -44,7 +45,7 @@
 			vertical-align: top;
 		}
 		td.u {
-			padding-top: 5px;
+			padding-bottom: 5px;
 		}
 		span.utitle {
 			font-size: 14px;
@@ -57,16 +58,34 @@
 			vertical-align: top;
 		}
 		td.m {
-			padding-top: 5px;
+			padding-bottom: 5px;
 		}
 		.sg {
 			font-size: 12px;
 			vertical-align: top;
 		}
+		.g1 {
+			display: block;
+			margin-left: 5px;
+			text-indent: -5px;
+		}
+		.g2 {
+			display: block;
+			margin-left: 15px;
+			text-indent: -15px;
+		}
+		.g3 {
+			display: block;
+			margin-left: 20px;
+			text-indent: -20px;
+		}
 		td.symbol {
 			color: #000000;
 			font-size: 12px;
 			vertical-align: top;
+		}
+		td.static {
+			padding-left: 20px;
 		}
 		.n {
 			font-size: 12px;
@@ -78,6 +97,10 @@
 		div.cpc ul {
 			background-color: #D6EBF5;
 		}
+		table.cpc {
+			background-color: #D6EBF5;
+			display: none;
+		}
 		ul.fancytree-container ul {
 			padding: 0 0 0 0;
 		}
@@ -85,12 +108,36 @@
 			list-style: none inside none;
 		}
 		span.fancytree-title {white-space: normal;}
-		/*table.cpc {
-			background-color: #D6EBF5;
-		}*/
+		.fancytree-exp-e span.fancytree-expander, .fancytree-exp-el span.fancytree-expander, .fancytree-exp-e span.fancytree-expander:hover, .fancytree-exp-el span.fancytree-expander:hover {
+			background-position: -31px -128px;
+		}
+		.fancytree-exp-c span.fancytree-expander, .fancytree-exp-cl span.fancytree-expander, .fancytree-exp-c span.fancytree-expander:hover, .fancytree-exp-cl span.fancytree-expander:hover {
+			background-position: -63px -128px;
+		}
 	</style>
 	<script>
 	function showCPC(symbol) {
+		//$("#"+symbol).fancytree({source: [{title: 'A01N 1/0205 · · Chemical aspects',  kind: 'sg', folder: true,  expanded: true, children: [{title: 'A01N 1/021 · · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids ', kind: 'sg'}]}], icons: false});
+		/*$("#"+symbol).fancytree({
+			source: [{title: 'A01N 1/0205', title1: '· · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N 1/021', title1: '· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
+			activeVisible: true,
+			icons: false,
+			extensions: ["table"],
+			table: {
+				indentation: 0,
+				nodeColumnIdx: 0
+			},
+			renderColumns: function(event, data2) {
+				var node2 = data2.node,
+					$tdList2 = $(node2.tr).find(">td");
+				$tdList2.eq(1).html(node2.data.title1);
+			}
+		});*/
+		
+		var $tablebody = $("#"+symbol).find('tbody');
+		if (! $tablebody.html()) {
+			$tablebody.html('<tr><td class="symbol static">A01N&nbsp;1/0205</td><td class="sg"><span class="g2">· · Chemical aspects</span></td></tr><tr><td class="symbol static">A01N&nbsp;1/021</td><td class="sg"><span class="g3">· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids</span></td></tr>');
+		}
 		$("#"+symbol).toggle();
 	}
 	
@@ -112,7 +159,7 @@
 							{title: "A01N",
 							 title1: '<span class="utitle">PRESERVATION OF BODIES OF HUMANS OR ANIMALS OR PLANTS OR PARTS THEREOF</span> (preservation of food or foodstuff A23); <span class="utitle">BIOCIDES, e.g. AS DISINFECTANTS, AS PESTICIDES OR AS HERBICIDES</span> (preparations for medical, dental or toilet purposes which kill or prevent the growth or proliferation of unwanted organisms A61K); <span class="utitle">PEST REPELLANTS OR ATTRACTANTS; PLANT GROWTH REGULATORS</span> (mixtures of pesticides with fertilisers C05G)',
 							 title2: '<span class="utitle">CONSERVATION DE CORPS HUMAINS OU ANIMAUX OU DE VÉGÉTAUX, OU DE PARTIES DE CEUX-CI</span> (conservation des aliments ou des produits alimentaires A23); <span class="utitle">BIOCIDES, p.ex. EN TANT QUE DÉSINFECTANTS, PESTICIDES OU HERBICIDES</span> (préparations destinées à un usage médical, dentaire ou pour la toilette, qui tuent les organismes indésirables ou empêchent leur croissance ou leur prolifération A61K); <span class="utitle">PRODUITS REPOUSSANT OU ATTIRANT LES ANIMAUX NUISIBLES; RÉGULATEURS DE CROISSANCE DES VÉGÉTAUX</span> (mélanges de pesticides avec des engrais C05G)',
-							 symbol: "", kind: "u", folder: true,  expanded: true, children: [
+							 symbol: "", kind: "u", folder: true, children: [
 							 	{
 							 		title: "",
 							 		title1: '<p>Note(s)</p><ol><li>This subclass covers: [3]<ul><li>compositions, physical forms, methods of application of specific materials or the use of single compounds or compositions; [7]</li><li>chemosterilants for the sexual sterilisation of invertebrates, e.g. insects (sex sterilants for other purposes A61K). [7]</li></ul></li></ol>',
@@ -131,9 +178,7 @@
 											kind: 'sg', symbol: "A01N0001020000", folder: true, expanded: true, hascpc: true, children: [
 												{
 													title: "&nbsp;",
-													cpc: [{title: 'A01N 1/0205 · · Chemical aspects',  kind: 'sg', folder: true,  expanded: true, children: [{title: 'A01N 1/021 · · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids ', kind: 'sg'}]}],
-													//cpc: [{title: 'A01N 1/0205', title1: '· · Chemical aspects',  folder: true,  expanded: true, children: [{title: 'A01N 1/021', title1: '· · · Preservation or perfusion media, liquids, solids or gases used in the preservation of cells, tissue, organs or bodily fluids '}]}],
-													kind: 'sg', parent: "A01N0001020000"
+													cpc: true, kind: 'sg', parent: "A01N0001020000"
 												}
 											]
 										}
@@ -173,22 +218,8 @@
 				
 				if (node.data.cpc) {
 					$tdList.eq(1).prop("colspan", 2).next().remove();
-					$tdList.eq(1).html('<div id="' + node.data.parent + '" class="cpc"></div>').find('div').fancytree({source: node.data.cpc, icons: false});
-					/*$tdList.eq(1).html('<table width="100%" class="cpc"><colgroup><col><col width="100%"></colgroup><thead><tr> <th>blablablablablabla</th> <th> </th></tr></thead><tbody></tbody></table>').find('table').fancytree({
-						source: node.data.cpc,
-						activeVisible: true,
-						icons: false,
-						extensions: ["table"],
-						table: {
-							indentation: 0,
-							nodeColumnIdx: 0
-						},
-						renderColumns: function(event, data2) {
-							var node2 = data2.node,
-								$tdList2 = $(node2.tr).find(">td");
-							$tdList2.eq(1).html(node2.data.title1);
-						}
-					});*/
+					//$tdList.eq(1).html('<div id="' + node.data.parent + '" class="cpc"></div>');
+					$tdList.eq(1).html('<table id="' + node.data.parent + '" width="100%" class="cpc"><colgroup><col width="85px"><col></colgroup><thead><tr> <th></th> <th> </th></tr></thead><tbody></tbody></table>');
 				} else {
 					if (node.data.hascpc) {
 						$tdList.eq(0).html('<a href="#" onclick="javascript:showCPC(\'' + node.data.symbol + '\')">CPC</a>');
