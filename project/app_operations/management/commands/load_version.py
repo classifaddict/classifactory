@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
-from _ipc2rdf import load
+from _ipc_load import load
 
 class Command(BaseCommand):
     args = ''
