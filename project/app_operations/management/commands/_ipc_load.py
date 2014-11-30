@@ -87,22 +87,22 @@ class IpcEntry:
                     title.append([])
                 self.titles.append(title)
 
-    def get_xml_titles(self):
-        title_list = ''
-        for lang, titles in self.items.iteritems():
-            title = '<span class="h%d" xml:lang="%s">' % (self.depth, lang)
-            subtitles = []
-            for title in titles:
-                subtitle = '<span class="title">%s</span>' % title[0]
-                if len(title[1]):
-                    subtitle += '<span class="refs"> ('
-                    subtitle += '; '.join(title[1])
-                    subtitle += ')</span>'
-                subtitles.append(subtitle)
-            title += '; '.join(subtitles)
-            title += '</span>'
-            title_list += title
-        return title_list
+    # def get_xml_titles(self):
+    #     title_list = ''
+    #     for lang, titles in self.items.iteritems():
+    #         title = '<span class="h%d" xml:lang="%s">' % (self.depth, lang)
+    #         subtitles = []
+    #         for title in titles:
+    #             subtitle = '<span class="title">%s</span>' % title[0]
+    #             if len(title[1]):
+    #                 subtitle += '<span class="refs"> ('
+    #                 subtitle += '; '.join(title[1])
+    #                 subtitle += ')</span>'
+    #             subtitles.append(subtitle)
+    #         title += '; '.join(subtitles)
+    #         title += '</span>'
+    #         title_list += title
+    #     return title_list
 
     def _build_ranges(self, rangekind, children):
         r = None
@@ -137,42 +137,10 @@ class IpcEntry:
             self.children = self.entry.xpath('./ipcEntry[@kind!="t" and @kind!="n" and @kind!="g" and @kind!="i"]')
 
 
-def db_load_concept(entry, lang, parent=None):
-        cObj, created = Concept.objects.get_or_create(
-            notation=entry.id,
-            label=entry.label,
-            depth=entry.depth,
-        )
-        cObj.save()
-
-        if created and parent is not None:
-            cObj.parent = parent
-
-        if entry.titles is not None:
-            for title in entry.titles:
-                dObj = Definition(
-                    concept=cObj,
-                    text=title[0],
-                    lang=lang
-                )
-                dObj.save()
-                for ref in title[1]:
-                    rObj = Reference(
-                        definition=dObj,
-                        text=ref,
-                        lang=lang
-                    )
-                    rObj.save()
-                dObj.save()
-        cObj.save()
-        return cObj
-
-
 class IpcScheme:
     def __init__(self, version):
         self.version = version
         self.tree = None
-        self.graph = None
         self.sections = None
 
     def get_tree(self):
@@ -183,11 +151,41 @@ class IpcScheme:
     def get_entry(self, entry):
         return IpcEntry(entry, self.tree)
 
+    def db_load_concept(self, entry, lang, parent=None):
+            cObj, created = Concept.objects.get_or_create(
+                notation=entry.id,
+                label=entry.label,
+                depth=entry.depth,
+            )
+            cObj.save()
+
+            if created and parent is not None:
+                cObj.parent = parent
+
+            if entry.titles is not None:
+                for title in entry.titles:
+                    dObj = Definition(
+                        concept=cObj,
+                        text=title[0],
+                        lang=lang
+                    )
+                    dObj.save()
+                    for ref in title[1]:
+                        rObj = Reference(
+                            definition=dObj,
+                            text=ref,
+                            lang=lang
+                        )
+                        rObj.save()
+                    dObj.save()
+            cObj.save()
+            return cObj
+
     def recurse_entries(self, entry, lang, parent):
         if len(entry.children):
             for child in entry.children:
                 e = self.get_entry(child)
-                cObj = db_load_concept(e, lang, parent)
+                cObj = self.db_load_concept(e, lang, parent)
                 self.recurse_entries(e, lang, cObj)
 
     def db_load(self):
@@ -196,5 +194,5 @@ class IpcScheme:
             sections = self.tree.xpath('//' + lang)[0][0]
             for section in sections:
                 entry = self.get_entry(section)
-                sObj = db_load_concept(entry, lang)
+                sObj = self.db_load_concept(entry, lang)
                 self.recurse_entries(entry, lang, sObj)
