@@ -3,7 +3,7 @@
   "pk": 1, 
   "model": "app_tree.element", 
   "fields": {
-    "rght": 4, 
+    "rght": 6, 
     "name": "doc", 
     "parent": null, 
     "level": 0, 
@@ -15,11 +15,23 @@
   "pk": 2, 
   "model": "app_tree.element", 
   "fields": {
-    "rght": 3, 
+    "rght": 5, 
     "name": "para", 
     "parent": 1, 
     "level": 1, 
     "lft": 2, 
+    "tree_id": 1
+  }
+},
+{
+  "pk": 3, 
+  "model": "app_tree.element", 
+  "fields": {
+    "rght": 4, 
+    "name": "subpara", 
+    "parent": 2, 
+    "level": 2, 
+    "lft": 3, 
     "tree_id": 1
   }
 },
@@ -29,6 +41,15 @@
   "fields": {
     "name": "kind", 
     "value": "s", 
+    "element": 2
+  }
+},
+{
+  "pk": 2, 
+  "model": "app_tree.attribute", 
+  "fields": {
+    "name": "symbol", 
+    "value": "A01N", 
     "element": 2
   }
 },
