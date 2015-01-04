@@ -7,7 +7,9 @@ class Element(MPTTModel):
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
     def is_container(self):
-        return self.children.count()
+        if self.is_leaf_node():
+            return False
+        return True
 
     def attributes_html(self):
         if not self.attributes.count():
