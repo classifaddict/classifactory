@@ -43,6 +43,6 @@ class ChildFancySerializer(serializers.Serializer):
     folder = serializers.BooleanField(source='is_container')
     attrs = serializers.CharField(source='attributes_html')
     data = DataSerializer(many=True)
-    lazy = serializers.BooleanField()
+    lazy = serializers.BooleanField(source='is_lazy')
     expanded = serializers.BooleanField()
-    children = RecursiveField(source='fancy_children', required=False, many=True)
+    children = RecursiveField(source='lazy_children', required=False, many=True)

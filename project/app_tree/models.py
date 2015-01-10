@@ -5,9 +5,12 @@ from mptt.models import MPTTModel, TreeForeignKey
 class Element(MPTTModel):
     name = models.CharField(max_length=128)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+    is_lazy = models.BooleanField(default=False)
 
-    def fancy_children(self):
-        return self.get_children().exclude(parent__name='ipcEntry')
+    def lazy_children(self):
+        if self.is_lazy:
+            return self.get_children().exclude(parent__name=self.name)
+        return self.get_children()
 
     def is_container(self):
         if self.is_leaf_node():
@@ -23,13 +26,8 @@ class Element(MPTTModel):
             a.value
         ) for a in self.attributes.all()])
 
-    def lazy(self):
-        if self.name in ['ipcEntry']:
-            return True
-        return False
-
     def expanded(self):
-        if self.is_root_node() or self.name in ['ipcEntry']:
+        if self.is_lazy or self.is_root_node() :
             return False
         return True
 

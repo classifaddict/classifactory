@@ -7,9 +7,12 @@ from app_tree.models import Element, Attribute, Data
 except_attr = ['lang', 'ipcLevel', 'priorityOrder']
 except_attr_val = [('entryType', 'K')]
 data_elt = ['text', 'references', 'entryReference', 'noteParagraph']
+lazy_elt = ['ipcEntry']
+
 
 def store_element(elt, attrs, datas, parent=None):
-    e = Element.objects.create(name=elt.tag, parent=parent)
+    lazy = elt.tag in lazy_elt
+    e = Element.objects.create(name=elt.tag, parent=parent, is_lazy=lazy)
 
     attrs.extend([
         Attribute(
