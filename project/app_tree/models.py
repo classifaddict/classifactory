@@ -6,6 +6,9 @@ class Element(MPTTModel):
     name = models.CharField(max_length=128)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
 
+    def fancy_children(self):
+        return self.get_children().exclude(parent__name='ipcEntry')
+
     def is_container(self):
         if self.is_leaf_node():
             return False
@@ -21,9 +24,14 @@ class Element(MPTTModel):
         ) for a in self.attributes.all()])
 
     def lazy(self):
-        if self.is_container():
+        if self.name in ['ipcEntry']:
             return True
         return False
+
+    def expanded(self):
+        if self.is_root_node() or self.name in ['ipcEntry']:
+            return False
+        return True
 
     def __unicode__(self):
         return self.name

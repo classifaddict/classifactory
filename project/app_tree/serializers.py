@@ -31,6 +31,12 @@ class ElementSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'attributes', 'data', 'children')
 
 
+class RecursiveField(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
+
+
 class ChildFancySerializer(serializers.Serializer):
     key = serializers.IntegerField(source='pk')
     title = serializers.CharField(source='name')
@@ -38,3 +44,5 @@ class ChildFancySerializer(serializers.Serializer):
     attrs = serializers.CharField(source='attributes_html')
     data = DataSerializer(many=True)
     lazy = serializers.BooleanField()
+    expanded = serializers.BooleanField()
+    children = RecursiveField(source='fancy_children', required=False, many=True)
