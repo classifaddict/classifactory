@@ -1,7 +1,7 @@
 import os
 from lxml import etree
 from django.conf import settings
-from app_tree.models import Element, Attribute, Data
+from app_tree.models import Doctype, Element, Attribute, Data
 
 doctypes = {
     'ipcr_scheme': {
@@ -14,10 +14,18 @@ doctypes = {
 
 
 def store_element(elt, doctype, datas, parent=None):
-    lazy = elt.tag in doctypes[doctype]['lazy_elt']
-    e = Element.objects.create(name=elt.tag, parent=parent, is_lazy=lazy)
+    lazy = elt.tag in doctypes[doctype.name]['lazy_elt']
+    e = Element.objects.create(
+        doctype=doctype,
+        name=elt.tag,
+        parent=parent,
+        is_lazy=lazy
+    )
+
     for name, value in elt.items():
-        if name not in doctypes[doctype]['except_attr'] and value and not (name, value) in doctypes[doctype]['except_attr_val']:
+        if name not in doctypes[doctype.name]['except_attr']
+        and value
+        and not (name, value) in doctypes[doctype.name]['except_attr_val']:
             a, c = Attribute.objects.get_or_create(
                 doctype=doctype,
                 name=name,
@@ -26,7 +34,7 @@ def store_element(elt, doctype, datas, parent=None):
             e.attributes.add(a)
     e.save()
 
-    if elt.tag in doctypes[doctype]['data_elt']:
+    if elt.tag in doctypes[doctype.name]['data_elt']:
         datas.append(Data(element=e, lang='en', texts=etree.tostring(elt)))
     else:
         for child in elt:
@@ -40,6 +48,8 @@ def load(doctype, file_version, file_extension='xml'):
         doctype + '_' + file_version + '.' + file_extension
     ), parser)
     root = tree.getroot()
+
+    doctype, c = Doctype.objects.get_or_create(name=doctype)
 
     datas = []
     store_element(root, doctype, datas=datas)

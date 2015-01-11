@@ -2,20 +2,25 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 
+class Doctype(models.Model):
+    name = models.CharField(max_length=128, unique=True)
+
+
 class Attribute(models.Model):
-    #element = models.ForeignKey('Element', related_name='attributes')
-    doctype = models.CharField(max_length=128)
+    doctype = models.ForeignKey('Doctype', related_name='attributes')
     name = models.CharField(max_length=128)
     value = models.CharField(max_length=128)
 
     class Meta:
         unique_together = ('doctype', 'name', 'value')
+        ordering = ['name']
 
     def __unicode__(self):
         return self.name
 
 
 class Element(MPTTModel):
+    doctype = models.ForeignKey('Doctype', related_name='elements')
     name = models.CharField(max_length=128)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
     attributes = models.ManyToManyField(Attribute, null=True, blank=True)
