@@ -5,8 +5,8 @@ from app_tree.models import Doctype, Element, Attribute, Data
 
 doctypes = {
     'ipcr_scheme': {
-        'except_attr': ['edition', 'lang', 'ipcLevel', 'priorityOrder'],
-        'except_attr_val': [('entryType', 'K')],
+        'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
+        'except_attr_val': [],
         'data_elt': ['text', 'references', 'entryReference', 'noteParagraph'],
         'lazy_elt': ['ipcEntry']
     }
@@ -40,6 +40,7 @@ def store_element(elt, doctype, datas, parent=None):
         for child in elt:
             store_element(child, doctype, datas, parent=e)
 
+    return e
 
 def load(doctype_name, dataset_version, file_extension='xml'):
     parser = etree.XMLParser(remove_blank_text=True)
@@ -52,5 +53,13 @@ def load(doctype_name, dataset_version, file_extension='xml'):
     doctype, c = Doctype.objects.get_or_create(name=doctype_name)
 
     datas = []
-    store_element(root, doctype, datas=datas)
+
+    root_obj = store_element(root, doctype, datas=datas)
+    a, c = Attribute.objects.get_or_create(
+        doctype=doctype,
+        name='dataset_version',
+        value=dataset_version
+    )
+    root_obj.attributes.add(a)
+
     Data.objects.bulk_create(datas)
