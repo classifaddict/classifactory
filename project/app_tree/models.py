@@ -5,6 +5,9 @@ from mptt.models import MPTTModel, TreeForeignKey
 class Doctype(models.Model):
     name = models.CharField(max_length=128, unique=True)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Attribute(models.Model):
     doctype = models.ForeignKey('Doctype', related_name='attributes')
@@ -58,3 +61,6 @@ class Data(models.Model):
     element = models.ForeignKey('Element', related_name='data')
     lang = models.CharField(max_length=2)
     texts = models.TextField()
+
+    class Meta:
+        unique_together = ('element', 'lang')
