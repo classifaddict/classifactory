@@ -2,9 +2,23 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
 
+class Attribute(models.Model):
+    #element = models.ForeignKey('Element', related_name='attributes')
+    doctype = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
+    value = models.CharField(max_length=128)
+
+    class Meta:
+        unique_together = ('doctype', 'name', 'value')
+
+    def __unicode__(self):
+        return self.name
+
+
 class Element(MPTTModel):
     name = models.CharField(max_length=128)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+    attributes = models.ManyToManyField(Attribute, null=True, blank=True)
     is_lazy = models.BooleanField(default=False)
 
     def lazy_children(self):
@@ -30,15 +44,6 @@ class Element(MPTTModel):
         if self.is_lazy or self.is_root_node() :
             return False
         return True
-
-    def __unicode__(self):
-        return self.name
-
-
-class Attribute(models.Model):
-    element = models.ForeignKey('Element', related_name='attributes')
-    name = models.CharField(max_length=128)
-    value = models.CharField(max_length=128)
 
     def __unicode__(self):
         return self.name

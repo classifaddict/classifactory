@@ -17,5 +17,5 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        cpc = options['zip']
-        load(args[0])
+        zip = options['zip']
+        load(*args)

@@ -4,19 +4,19 @@ from models import Element, Attribute, Data
 
 
 class ElementAdmin(DjangoMpttAdmin):
-    pass
+    list_display = ('name', 'parent', 'attributes_html')
 
 admin.site.register(Element, ElementAdmin)
 
 
 class AttributeAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('doctype', 'name', 'value')
 
 admin.site.register(Attribute, AttributeAdmin)
 
 
 class DataAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('element', 'lang', 'texts')
 
 admin.site.register(Data, DataAdmin)
 
