@@ -6,7 +6,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 
 from models import Element
-from serializers import ElementSerializer, ChildFancySerializer
+from serializers import ElementSerializer, ChildFancySerializer, KeySerializer
 
 
 def home(request):
@@ -71,3 +71,37 @@ def element_fancy_children(request, pk):
         element = Element.objects.filter(parent=pk)
         serializer = ChildFancySerializer(element, many=True)
         return JSONResponse(serializer.data)
+
+
+@csrf_exempt
+def element_fancy_ancestors(request, pk):
+    """
+    List all ancestors' pks of an element.
+    """
+
+    if request.method == 'GET':
+        element = Element.objects.get(pk=pk)
+        ancestors = element.get_ancestors(ascending=True, include_self=True).filter(is_lazy=True)
+        serializer = KeySerializer(ancestors, many=True)
+        return JSONResponse(serializer.data)
+
+
+@csrf_exempt
+def element_fancy_search(request, query):
+    """
+    List all ancestors' pk of the first element found.
+    """
+
+    if request.method == 'GET':
+        r = Element.objects.all()
+        for param in query.split():
+            p = param.split('=')
+            r = r.filter(attributes__name=p[0], attributes__value=p[1])
+
+        if r.count():
+            element = r[0]
+            ancestors = element.get_ancestors(ascending=True, include_self=True).filter(is_lazy=True)
+            serializer = KeySerializer(ancestors, many=True)
+            return JSONResponse(serializer.data)
+        else:
+            return HttpResponse(status=404)

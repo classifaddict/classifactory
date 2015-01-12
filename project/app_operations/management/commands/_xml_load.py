@@ -8,7 +8,7 @@ doctypes = {
         'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
         'except_attr_val': [],
         'data_elt': ['text', 'references', 'entryReference', 'noteParagraph'],
-        'lazy_elt': ['ipcEntry']
+        'lazy_elt': ['revisionPeriods', 'ipcEntry']
     }
 }
 

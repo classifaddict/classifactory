@@ -38,7 +38,7 @@ class RecursiveField(serializers.Serializer):
 
 
 class ChildFancySerializer(serializers.Serializer):
-    key = serializers.IntegerField(source='pk')
+    key = serializers.CharField(source='pk')
     title = serializers.CharField(source='name')
     folder = serializers.BooleanField(source='is_container')
     attrs = serializers.CharField(source='attributes_html')
@@ -46,3 +46,7 @@ class ChildFancySerializer(serializers.Serializer):
     lazy = serializers.BooleanField(source='is_lazy')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)
+
+class KeySerializer(serializers.Serializer):
+    key = serializers.CharField(source='pk')
+
