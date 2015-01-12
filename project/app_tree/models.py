@@ -13,6 +13,13 @@ class Attribute(models.Model):
     doctype = models.ForeignKey('Doctype', related_name='attributes')
     name = models.CharField(max_length=128)
     value = models.CharField(max_length=128)
+    is_main = models.BooleanField()
+
+    def attr_html(self):
+        cls = 'nd'
+        if self.is_main:
+            cls = 'st'
+        return '<dt>%s</dt><dd class="%s">%s</dd>' % (self.name, cls, self.value)
 
     class Meta:
         unique_together = ('doctype', 'name', 'value')
@@ -43,10 +50,7 @@ class Element(MPTTModel):
         if not self.attributes.count():
             return None
 
-        return '<dl>%s</dl>' % ''.join(['<dt>%s</dt><dd>%s</dd>' % (
-            a.name,
-            a.value
-        ) for a in self.attributes.all()])
+        return '<dl>%s</dl>' % ''.join([a.attr_html() for a in self.attributes.all()])
 
     def expanded(self):
         if self.is_lazy or self.is_root_node() :

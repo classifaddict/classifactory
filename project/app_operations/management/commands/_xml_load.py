@@ -5,6 +5,7 @@ from app_tree.models import Doctype, Element, Attribute, Data
 
 doctypes = {
     'ipcr_scheme': {
+        'main_attr': ['symbol'],
         'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
         'except_attr_val': [],
         'data_elt': ['text', 'references', 'entryReference', 'noteParagraph'],
@@ -29,7 +30,8 @@ def store_element(elt, doctype, datas, parent=None):
             a, c = Attribute.objects.get_or_create(
                 doctype=doctype,
                 name=name,
-                value=value
+                value=value,
+                is_main=name in doctypes[doctype.name]['main_attr']
             )
             e.attributes.add(a)
     e.save()
@@ -62,7 +64,8 @@ def load(doctype_name, dataset_version, file_extension='xml'):
     a, c = Attribute.objects.get_or_create(
         doctype=doctype,
         name='dataset_version',
-        value=dataset_version
+        value=dataset_version,
+        is_main=False
     )
     root_obj.attributes.add(a)
 

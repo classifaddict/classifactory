@@ -12,9 +12,21 @@
 			font-family: Arial, Helvetica, sans-serif;
 			font-size: 14px;
 		}
+
+		div#top {
+			position:fixed;
+			top:0px;
+			left:0px;
+			width:100%;
+			color:#CCC;
+			background:#333;
+			padding:8px;
+		}
+
 		table {
 			border-collapse: collapse;
 			border-spacing: 0;
+			margin-top: 80px;
 		}
 		td {
 			vertical-align: top;
@@ -26,6 +38,7 @@
 		dt {
 			float: left;
 			clear: left;
+			display: none;
 		}
 		dt:after {
 			content: ":";
@@ -33,6 +46,9 @@
 		dd {
 			margin: 0 0 0 80px;
 			padding: 0;
+		}
+		dd.nd {
+			display: none;
 		}
 		/*table.fancytree-ext-table tbody tr td {
 			border: 0 none transparent;
@@ -85,6 +101,16 @@
 			event.preventDefault();
 		});
 
+		$('#showattrs').on('click', function() {
+			$("dt").show();
+			$("dd.nd").show();
+		});
+
+		$('#hideattrs').on('click', function() {
+			$("dt").hide();
+			$("dd.nd").hide();
+		});
+
 	});
 
 	function reach_node(tree, path_keys) {
@@ -104,11 +130,11 @@
 	</script>
 </head>
 <body>
-	<div>
+	<div id="top">
 	<form id="search">
 		<input type="text" name="query" size="100">
 		<input type="submit" value="Search">
-	</form>
+	</form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
 	</div>
 	<table id="tree" width="100%">
 		<colgroup>
