@@ -35,7 +35,11 @@ def store_element(elt, doctype, datas, parent=None):
     e.save()
 
     if elt.tag in doctypes[doctype.name]['data_elt']:
-        datas.append(Data(element=e, lang='en', texts=etree.tostring(elt)))
+        datas.append(Data(
+            element=e,
+            lang='en',
+            texts=etree.tostring(elt).replace('<' + elt.tag + '>', '').replace('</' + elt.tag + '>', '')
+        ))
     else:
         for child in elt:
             store_element(child, doctype, datas, parent=e)

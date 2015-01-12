@@ -37,12 +37,17 @@ class RecursiveField(serializers.Serializer):
         return serializer.data
 
 
+class HtmlDataSerializer(serializers.Serializer):
+    lang = serializers.CharField()
+    texts = serializers.CharField(source='texts_html')
+
+
 class ChildFancySerializer(serializers.Serializer):
     key = serializers.CharField(source='pk')
     title = serializers.CharField(source='name')
     folder = serializers.BooleanField(source='is_container')
     attrs = serializers.CharField(source='attributes_html')
-    data = DataSerializer(many=True)
+    data = HtmlDataSerializer(many=True)
     lazy = serializers.BooleanField(source='is_lazy')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)

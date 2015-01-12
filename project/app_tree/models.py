@@ -1,6 +1,6 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-
+from django.utils.html import escape
 
 class Doctype(models.Model):
     name = models.CharField(max_length=128, unique=True)
@@ -61,6 +61,10 @@ class Data(models.Model):
     element = models.ForeignKey('Element', related_name='data')
     lang = models.CharField(max_length=2)
     texts = models.TextField()
+
+    def texts_html(self):
+        return escape(self.texts)
+
 
     class Meta:
         unique_together = ('element', 'lang')
