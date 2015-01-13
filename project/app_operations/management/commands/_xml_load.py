@@ -30,8 +30,7 @@ def store_element(elt, doctype, datas, parent=None):
             a, c = Attribute.objects.get_or_create(
                 doctype=doctype,
                 name=name,
-                value=value,
-                is_main=name in doctypes[doctype.name]['main_attr']
+                value=value
             )
             e.attributes.add(a)
     e.save()
@@ -50,13 +49,19 @@ def store_element(elt, doctype, datas, parent=None):
 
 def load(doctype_name, dataset_version, file_extension='xml'):
     parser = etree.XMLParser(remove_blank_text=True)
-    tree = etree.parse(os.path.join(
-        settings.DATA_DIR,
-        doctype_name + '_' + dataset_version + '.' + file_extension
-    ), parser)
+    tree = etree.parse(
+        os.path.join(
+            settings.DATA_DIR,
+            doctype_name + '_' + dataset_version + '.' + file_extension
+        ),
+        parser
+    )
     root = tree.getroot()
 
-    doctype, c = Doctype.objects.get_or_create(name=doctype_name)
+    doctype, created = Doctype.objects.get_or_create(name=doctype_name)
+    if created:
+        doctype.main_attr = doctypes[doctype_name]['main_attr'][0]
+        doctype.save()
 
     datas = []
 
@@ -64,8 +69,7 @@ def load(doctype_name, dataset_version, file_extension='xml'):
     a, c = Attribute.objects.get_or_create(
         doctype=doctype,
         name='dataset_version',
-        value=dataset_version,
-        is_main=False
+        value=dataset_version
     )
     root_obj.attributes.add(a)
 
