@@ -16,7 +16,7 @@ class Attribute(models.Model):
     value = models.CharField(max_length=128)
 
     def is_main(self):
-        if self.name == self.doctype.main_attr:
+        if self.name in [self.doctype.main_attr, 'dataset_version']:
             return True
         return False
 

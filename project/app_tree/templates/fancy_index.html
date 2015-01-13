@@ -52,6 +52,7 @@
 			display: none;
 		}
 		dd.main {
+			font-weight: bold;
 			display: block;
 		}
 		dl.showattr dd {
@@ -98,6 +99,7 @@
 				if (node.data[1]) $tdList.eq(3).html(node.data[1].texts);
 			},
 			click: function(event, data) {
+				// data.targetType is undefined when clicked column is not the main node one
 				if (!data.targetType) {
 					$tdList = $(data.node.tr).find(">td");
 					$tdList.eq(1).find(">dl").toggleClass('showattr');
