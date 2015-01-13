@@ -43,12 +43,19 @@
 		dt:after {
 			content: ":";
 		}
+		dl.showattr dt {
+			display: block;
+		}
 		dd {
 			margin: 0 0 0 80px;
 			padding: 0;
-		}
-		dd.nd {
 			display: none;
+		}
+		dd.main {
+			display: block;
+		}
+		dl.showattr dd {
+			display: block;
 		}
 		/*table.fancytree-ext-table tbody tr td {
 			border: 0 none transparent;
@@ -90,6 +97,12 @@
 				if (node.data[0]) $tdList.eq(2).html(node.data[0].texts);
 				if (node.data[1]) $tdList.eq(3).html(node.data[1].texts);
 			},
+			click: function(event, data) {
+				if (!data.targetType) {
+					$tdList = $(data.node.tr).find(">td");
+					$tdList.eq(1).find(">dl").toggleClass('showattr');
+				}
+			}
 		});
 
 		$("#search").submit(function(event) {
@@ -101,14 +114,20 @@
 			event.preventDefault();
 		});
 
-		$('#showattrs').on('click', function() {
-			$("dt").show();
-			$("dd.nd").show();
+		$('#hideattrs').click(function() {
+			$("dl").removeClass('showattr');
+			var active = $("#tree").fancytree("getTree").getActiveNode();
+			if (active){
+				active.scrollIntoView();
+			}
 		});
 
-		$('#hideattrs').on('click', function() {
-			$("dt").hide();
-			$("dd.nd").hide();
+		$('#showattrs').click(function() {
+			$("dl").addClass('showattr');
+			var active = $("#tree").fancytree("getTree").getActiveNode();
+			if (active){
+				active.scrollIntoView();
+			}
 		});
 
 	});
@@ -121,7 +140,7 @@
 				node.setTitle('<b style="color: red;">'+node.title+'</b>');
 				node.setActive();
 				node.setFocus();
-				node.makeVisible();
+				node.scrollIntoView();
 			} else {
 				reach_node(tree, path_keys);
 			}

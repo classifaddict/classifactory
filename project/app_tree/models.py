@@ -16,10 +16,10 @@ class Attribute(models.Model):
     is_main = models.BooleanField()
 
     def attr_html(self):
-        cls = 'nd'
+        cls = ''
         if self.is_main:
-            cls = 'st'
-        return '<dt>%s</dt><dd class="%s">%s</dd>' % (self.name, cls, self.value)
+            cls = ' class="main"'
+        return '<dt>%s</dt><dd%s>%s</dd>' % (self.name, cls, self.value)
 
     class Meta:
         unique_together = ('doctype', 'name', 'value')
