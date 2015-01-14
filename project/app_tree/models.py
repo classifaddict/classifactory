@@ -39,10 +39,9 @@ class Element(models.Model):
     doctype = models.ForeignKey('Doctype', related_name='elements')
     name = models.CharField(max_length=128)
     attributes = models.ManyToManyField(Attribute, null=True, blank=True)
-    dataset_version = models.CharField(max_length=8)
 
     def attributes_html(self):
-        if not self.attributes.count():
+        if not self.attributes.exists():
             return None
         return '<dl>%s</dl>' % ''.join([a.attr_html() for a in self.attributes.all()])
 

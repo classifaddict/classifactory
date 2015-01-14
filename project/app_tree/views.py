@@ -104,7 +104,7 @@ def element_fancy_search(request, query):
                 element__attributes__value=p[1]
             )
 
-        if r.count():
+        if r.exists():
             treenode = r[0]
             ancestors = treenode.get_ancestors(
                 ascending=True,
@@ -115,3 +115,14 @@ def element_fancy_search(request, query):
             return JSONResponse(serializer.data)
         else:
             return HttpResponse(status=404)
+
+''' Diff:
+t = TreeNode.objects.root_nodes()
+for d in zip(t[0].get_descendants(), t[1].get_descendants()):
+    f1 = [n.element for n in d[0].get_children()]
+    f2 = [n.element for n in d[1].get_children()]
+    if f1 != f2:
+         x+=1
+         print f1, f2
+         if x==5: break
+'''

@@ -14,12 +14,11 @@ doctypes = {
 }
 
 
-def store_element(elt, doctype, dataset_version, datas, parent=None):
+def store_element(elt, doctype, datas, parent=None):
 
     q = Element.objects.filter(
         doctype=doctype,
-        name=elt.tag,
-        dataset_version=dataset_version
+        name=elt.tag
     )
 
     attrs = []
@@ -40,13 +39,12 @@ def store_element(elt, doctype, dataset_version, datas, parent=None):
         texts = etree.tostring(elt).replace('<' + elt.tag + '>', '').replace('</' + elt.tag + '>', '')
         q = q.filter(data__lang='en', data__texts=texts)
 
-    if q.count():
+    if q.exists() and parent is not None:
         e = q[0]
     else:
         e = Element.objects.create(
             doctype=doctype,
-            name=elt.tag,
-            dataset_version=dataset_version
+            name=elt.tag
         )
         e.attributes = attrs
         e.save()
@@ -62,7 +60,7 @@ def store_element(elt, doctype, dataset_version, datas, parent=None):
 
     if not texts:
         for child in elt:
-            store_element(child, doctype, dataset_version, datas, parent=n)
+            store_element(child, doctype, datas, parent=n)
 
     return e
 
@@ -85,7 +83,7 @@ def load(doctype_name, dataset_version, file_extension='xml'):
 
     datas = []
 
-    root_obj = store_element(root, doctype, dataset_version, datas)
+    root_obj = store_element(root, doctype, datas)
 
     a, c = Attribute.objects.get_or_create(
         doctype=doctype,

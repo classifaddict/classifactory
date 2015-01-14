@@ -16,7 +16,7 @@ admin.site.register(TreeNode, TreeNodeAdmin)
 
 
 class ElementAdmin(admin.ModelAdmin):
-    list_display = ('doctype', 'name', 'dataset_version')
+    list_display = ('doctype', 'name')
 
 admin.site.register(Element, ElementAdmin)
 
