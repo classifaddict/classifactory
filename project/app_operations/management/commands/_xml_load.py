@@ -8,8 +8,8 @@ doctypes = {
         'main_attr': ['dataset_version', 'symbol'],
         'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
         'except_attr_val': [],
-        'data_elt': ['text', 'references', 'entryReference', 'noteParagraph'],
-        'lazy_elt': ['revisionPeriods', 'ipcEntry']
+        'data_elt': ['text', 'references', 'entryReference'],
+        'main_elt': ['revisionPeriods', 'ipcEntry']
     }
 }
 
@@ -55,7 +55,7 @@ def store_element(elt, doctype, datas, parent=None):
     n = TreeNode.objects.create(
         element=e,
         parent=parent,
-        is_lazy=elt.tag in doctypes[doctype.name]['lazy_elt']
+        is_lazy=elt.tag in doctypes[doctype.name]['main_elt']
     )
 
     if not texts:
@@ -78,7 +78,7 @@ def load(doctype_name, dataset_version, file_extension='xml'):
     doctype, created = Doctype.objects.get_or_create(name=doctype_name)
     if created:
         doctype.main_attr = ' '.join(doctypes[doctype_name]['main_attr'])
-        doctype.lazy_nodes = ' '.join(doctypes[doctype_name]['lazy_elt'])
+        doctype.lazy_nodes = ' '.join(doctypes[doctype_name]['main_elt'])
         doctype.save()
 
     datas = []
