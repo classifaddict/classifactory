@@ -8,7 +8,7 @@ doctypes = {
     'ipcr_scheme': {
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'main_attrs': ['dataset_version', 'symbol'],
-        'except_attr': ['ipcLevel', 'priorityOrder'],
+        'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
         'except_attr_val': [],
         'data_elt': ['text', 'references', 'entryReference']
     }
@@ -28,7 +28,7 @@ def store_element(elt, dataset, parent=None):
 
     attrs = []
     for name, value in elt.items():
-        value = value.upper()
+        # value = value.upper()
         if name not in doctypes[dataset.doctype.name]['except_attr'] \
             and value \
             and not (name, value) in doctypes[dataset.doctype.name]['except_attr_val']:
@@ -60,18 +60,18 @@ def store_element(elt, dataset, parent=None):
         ).replace(
             '</%s>' % elt.tag, ''
         )
-        element = element.filter(texts__lang='EN', texts__contents=texts)
+        element = element.filter(texts__lang='en', texts__contents=texts)
 
     if element.exists():
-        element_is_new = False
+        #element_is_new = False
         e = element[0]
     else:
-        element_is_new = True
+        #element_is_new = True
         e = Element.objects.create(elt_type=elt_type)
         e.attributes = attrs
         if texts:
             t, c = Text.objects.get_or_create(
-                lang='EN',
+                lang='en',
                 contents=texts
             )
             e.texts.add(t)
@@ -86,7 +86,11 @@ def store_element(elt, dataset, parent=None):
         )
 
     # Attach the element to a treenode
+    treenode = create_treenode()
 
+    # Instead of creating a whole new tree (using create_treenode alone)
+    # we could try to merge with an existing one to ease furure diffing:
+    ###################################################################
     # if parent is None:
     #     # Get or create the root node and attach the element to it
     #     rootnode = TreeNode.objects.root_nodes().filter(dataset__doctype=dataset.doctype)
@@ -94,16 +98,15 @@ def store_element(elt, dataset, parent=None):
     #         # Merge all trees of the same doctype
     #         treenode = rootnode[0]
     #     else:
-    if parent is None:
-        # Create a new root node
-        treenode = create_treenode()
-    elif element_is_new:
-        treenode = create_treenode()
-    elif texts and not parent.get_children().filter(element=e).exists():
-        # Verify that a child node does not already contain it
-        treenode = create_treenode()
-    else:
-        treenode = create_treenode()
+    #         # Create a new root node
+    #         treenode = create_treenode()
+    # elif element_is_new:
+    #     treenode = create_treenode()
+    # elif texts and not parent.get_children().filter(element=e).exists():
+    #     # Verify that a child node does not already contain it
+    #     treenode = create_treenode()
+    # else:
+    #     treenode = create_treenode()
 
     if texts is None:
         for child in elt:
@@ -120,7 +123,7 @@ def load(doctype_name, dataset_version, file_extension='xml'):
         parser
     )
     root = tree.getroot()
-    
+
     doctype, c = Doctype.objects.get_or_create(name=doctype_name)
     doctype.main_attrs = ' '.join(doctypes[doctype_name]['main_attrs'])
     doctype.main_elts = ' '.join(doctypes[doctype_name]['main_elts'])

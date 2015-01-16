@@ -1,6 +1,5 @@
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
-from django.utils.html import escape
 
 
 class AbstractType(models.Model):
@@ -75,11 +74,11 @@ class Attribute(models.Model):
 
 
 class Text(models.Model):
-    lang = models.CharField(max_length=2, default='EN')
+    lang = models.CharField(max_length=2)
     contents = models.TextField()
 
     def texts_html(self):
-        return escape(self.contents)
+        return self.contents.replace('<', '&lt;')
 
     def __unicode__(self):
         return self.lang
