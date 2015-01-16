@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
 
 from models import TreeNode
 from serializers import ElementSerializer, ChildFancySerializer, KeySerializer
@@ -56,7 +55,7 @@ def element_fancy_roots(request):
     """
 
     if request.method == 'GET':
-        treenode = TreeNode.objects.filter(parent=None)
+        treenode = TreeNode.objects.root_nodes()
         serializer = ChildFancySerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
@@ -100,8 +99,8 @@ def element_fancy_search(request, query):
         for param in query.split():
             p = param.split('=')
             r = r.filter(
-                element__attributes__name=p[0],
-                element__attributes__value=p[1]
+                element__attributes__att_type__name=p[0],
+                element__attributes__value=p[1].upper()
             )
 
         if r.exists():

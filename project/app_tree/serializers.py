@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Element, Attribute, Data, TreeNode
+from models import Attribute, Text, TreeNode
 
 
 class AttributeSerializer(serializers.ModelSerializer):
@@ -8,10 +8,10 @@ class AttributeSerializer(serializers.ModelSerializer):
         fields = ('name', 'value')
 
 
-class DataSerializer(serializers.ModelSerializer):
+class TextSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Data
-        fields = ('lang', 'texts')
+        model = Text
+        fields = ('lang', 'contents')
 
 
 class ChildSerializer(serializers.ModelSerializer):
@@ -23,12 +23,11 @@ class ChildSerializer(serializers.ModelSerializer):
 class ElementSerializer(serializers.ModelSerializer):
     attributes = AttributeSerializer(many=True)
     children = ChildSerializer(many=True)
-    data = DataSerializer(many=True)
-
+    texts = TextSerializer(many=True)
 
     class Meta:
         model = TreeNode
-        fields = ('id', 'element.name', 'element.attributes', 'element.data', 'children')
+        fields = ('id', 'element.elt_type.name', 'element.attributes', 'element.texts', 'children')
 
 
 class HtmlDataSerializer(serializers.Serializer):
@@ -41,15 +40,16 @@ class RecursiveField(serializers.Serializer):
         serializer = self.parent.parent.__class__(value, context=self.context)
         return serializer.data
 
+
 class KeySerializer(serializers.Serializer):
     key = serializers.CharField(source='pk')
 
 
 class ChildFancySerializer(KeySerializer):
-    title = serializers.CharField(source='element.name')
+    title = serializers.CharField(source='element.elt_type.name')
     folder = serializers.BooleanField(source='is_container')
     attrs = serializers.CharField(source='element.attributes_html')
-    data = HtmlDataSerializer(source='element.data', many=True)
+    data = HtmlDataSerializer(source='element.texts', many=True)
     lazy = serializers.BooleanField(source='is_lazy')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)

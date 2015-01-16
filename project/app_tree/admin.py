@@ -1,12 +1,18 @@
 from django.contrib import admin
 from django_mptt_admin.admin import DjangoMpttAdmin
-from models import Element, Attribute, Data, Doctype, TreeNode
+from models import Element, Attribute, Text, Doctype, TreeNode, Dataset
 
 
 class DoctypeAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 admin.site.register(Doctype, DoctypeAdmin)
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+
+admin.site.register(Dataset, DatasetAdmin)
 
 
 class TreeNodeAdmin(DjangoMpttAdmin):
@@ -16,19 +22,19 @@ admin.site.register(TreeNode, TreeNodeAdmin)
 
 
 class ElementAdmin(admin.ModelAdmin):
-    list_display = ('doctype', 'name')
+    pass
 
 admin.site.register(Element, ElementAdmin)
 
 
 class AttributeAdmin(admin.ModelAdmin):
-    list_display = ('doctype', 'name', 'value')
+    list_display = ('value',)
 
 admin.site.register(Attribute, AttributeAdmin)
 
 
-class DataAdmin(admin.ModelAdmin):
-    list_display = ('element', 'lang', 'texts')
+class TextAdmin(admin.ModelAdmin):
+    list_display = ('lang', 'contents')
 
-admin.site.register(Data, DataAdmin)
+admin.site.register(Text, TextAdmin)
 
