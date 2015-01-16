@@ -120,7 +120,7 @@ def load(doctype_name, dataset_version, file_extension='xml'):
         parser
     )
     root = tree.getroot()
-
+    
     doctype, c = Doctype.objects.get_or_create(name=doctype_name)
     doctype.main_attrs = ' '.join(doctypes[doctype_name]['main_attrs'])
     doctype.main_elts = ' '.join(doctypes[doctype_name]['main_elts'])
