@@ -71,7 +71,7 @@ class Attribute(models.Model):
 
     class Meta:
         unique_together = ('att_type', 'value')
-        ordering = ['value']
+        ordering = ['att_type__name']
 
 
 class Text(models.Model):
