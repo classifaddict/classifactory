@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django_mptt_admin.admin import DjangoMpttAdmin
-from models import Element, Attribute, Text, Doctype, TreeNode, Dataset
+from models import Element, Attribute, Text, Translation, Doctype, TreeNode, Dataset
 
 
 class DoctypeAdmin(admin.ModelAdmin):
@@ -33,8 +33,14 @@ class AttributeAdmin(admin.ModelAdmin):
 admin.site.register(Attribute, AttributeAdmin)
 
 
-class TextAdmin(admin.ModelAdmin):
+class TranslationAdmin(admin.ModelAdmin):
     list_display = ('lang', 'contents')
+
+admin.site.register(Translation, TranslationAdmin)
+
+
+class TextAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contents')
 
 admin.site.register(Text, TextAdmin)
 

@@ -42,7 +42,7 @@ class ElementType(AbstractType):
 
 
 class Dataset(models.Model):
-    doctype = models.ForeignKey('Doctype', related_name='versions')
+    doctype = models.ForeignKey('Doctype', related_name='datasets')
     name = models.CharField(max_length=8)  # e.g. IPC Version
 
     def __unicode__(self):
@@ -73,7 +73,8 @@ class Attribute(models.Model):
         ordering = ['att_type__name']
 
 
-class Text(models.Model):
+class Translation(models.Model):
+    text = models.ForeignKey('Text', related_name='translations')
     lang = models.CharField(max_length=2)
     contents = models.TextField()
 
@@ -84,10 +85,25 @@ class Text(models.Model):
         return self.lang
 
 
+class Text(models.Model):
+    doctype = models.ForeignKey('Doctype', related_name='texts')
+    name = models.CharField(max_length=32)
+    contents = models.TextField()
+
+    def texts_html(self):
+        return self.contents.replace('<', '&lt;')
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('doctype', 'name')
+
+
 class Element(models.Model):
     elt_type = models.ForeignKey('ElementType', related_name='element_instances')
     attributes = models.ManyToManyField('Attribute', null=True, blank=True)
-    texts = models.ManyToManyField('Text', null=True, blank=True)
+    text = models.ForeignKey('Text', null=True, blank=True)
 
     def attributes_html(self):
         if self.attributes.exists():

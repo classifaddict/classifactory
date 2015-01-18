@@ -23,16 +23,15 @@ class ChildSerializer(serializers.ModelSerializer):
 class ElementSerializer(serializers.ModelSerializer):
     attributes = AttributeSerializer(many=True)
     children = ChildSerializer(many=True)
-    texts = TextSerializer(many=True)
+    text = TextSerializer(many=True)
 
     class Meta:
         model = TreeNode
-        fields = ('id', 'element.elt_type.name', 'element.attributes', 'element.texts', 'children')
+        fields = ('id', 'element.elt_type.name', 'element.attributes', 'element.text', 'children')
 
 
 class HtmlDataSerializer(serializers.Serializer):
-    lang = serializers.CharField()
-    texts = serializers.CharField(source='texts_html')
+    text = serializers.CharField(source='texts_html')
 
 
 class RecursiveField(serializers.Serializer):
@@ -49,7 +48,7 @@ class ChildFancySerializer(KeySerializer):
     title = serializers.CharField(source='element.elt_type.name')
     folder = serializers.BooleanField(source='is_container')
     attrs = serializers.CharField(source='element.attributes_html')
-    data = HtmlDataSerializer(source='element.texts', many=True)
+    data = HtmlDataSerializer(source='element.text')
     lazy = serializers.BooleanField(source='is_lazy')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)

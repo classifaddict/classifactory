@@ -95,8 +95,8 @@
 				$tdList = $(node.tr).find(">td");
 				$tdList.eq(0).addClass("symbol");
 				$tdList.eq(1).html(node.data.attrs);
-				if (node.data[0]) $tdList.eq(2).html(node.data[0].texts);
-				if (node.data[1]) $tdList.eq(3).html(node.data[1].texts);
+				if (node.data.text) $tdList.eq(2).html(node.data.text);
+				//if (node.data[1]) $tdList.eq(3).html(node.data[1].texts);
 			},
 			click: function(event, data) {
 				// data.targetType is undefined when clicked column is not the main node one

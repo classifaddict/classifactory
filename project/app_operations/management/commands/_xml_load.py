@@ -1,6 +1,9 @@
 import os
+from hashlib import md5
+
 from lxml import etree
 from django.conf import settings
+
 from app_tree.models import Doctype, ElementType, AttributeType
 from app_tree.models import Dataset, Element, Attribute, Text, TreeNode
 
@@ -54,13 +57,18 @@ def store_element(elt, dataset, parent=None):
     elt_type.save()
 
     texts = None
+    texts_name = None
     if elt.tag in doctypes[dataset.doctype.name]['data_elt']:
         texts = etree.tostring(elt).replace(
             '<%s>' % elt.tag, ''
         ).replace(
             '</%s>' % elt.tag, ''
         )
-        element = element.filter(texts__lang='en', texts__contents=texts)
+        texts_name = md5(texts).hexdigest()
+        element = element.filter(
+            text__doctype=dataset.doctype,
+            text__name=texts_name
+        )
 
     if element.exists():
         #element_is_new = False
@@ -71,10 +79,11 @@ def store_element(elt, dataset, parent=None):
         e.attributes = attrs
         if texts:
             t, c = Text.objects.get_or_create(
-                lang='en',
+                doctype=dataset.doctype,
+                name=texts_name,
                 contents=texts
             )
-            e.texts.add(t)
+            e.text = t
         e.save()
 
     def create_treenode():
