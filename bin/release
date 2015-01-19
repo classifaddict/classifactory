@@ -20,5 +20,5 @@ pushd $ROOT_DIR > /dev/null
     venv/bin/pip install --no-install --download dist -r requirements.txt
   fi
   echo "Creating archive..."
-  tar -czf tree.tar.gz -X bin/exclude.txt .
+  tar -czf ../tree.tar.gz -X bin/exclude.txt .
 popd > /dev/null

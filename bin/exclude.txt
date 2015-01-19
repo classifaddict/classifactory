@@ -1,5 +1,7 @@
 *.pyc
 .git*
+initial_data.json
+requirements_dev.txt
 README.md
 reset_pgsql_db.sh
 reset_mysql_db.sh

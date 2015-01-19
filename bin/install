@@ -12,6 +12,10 @@ PYTHON_EXE=python2.6
 APP_NAME=tree
 APP_DIR=/data/tree
 
+echo "Installing compilation material"
+yum -y install gcc libxml2-devel libxslt-devel \
+      python-devel mysql-devel httpd-devel
+
 echo "Creating mysql database"
 mysql -u root -p <<EOF
 DROP DATABASE IF EXISTS tree;
@@ -34,16 +38,20 @@ python dist/virtualenv-master/virtualenv.py $VENV_OPTIONS --prompt="($APP_NAME)"
 
 $VENV_DIR/bin/pip install --no-index --find-links dist -r requirements.txt
 
-$VENV_DIR/bin/python project/manage.py syncdb
-$VENV_DIR/bin/python project/manage.py collectstatic --noinput
+echo "Removing compilation material"
+yum -y remove gcc libxml2-devel libxslt-devel \
+      python-devel mysql-devel httpd-devel
 
 echo "Setting up httpd"
 cat > /etc/httpd/conf.d/wsgi-tree.conf <<EOF
 Include $APP_DIR/bin/httpd.conf
 EOF
-services httpd start
 
-touch project/app_main/wsgi.py
+$VENV_DIR/bin/python project/manage.py syncdb --noinput
+$VENV_DIR/bin/python manage.py createsuperuser --username=tree --email=o@c.com
+$VENV_DIR/bin/python project/manage.py collectstatic --noinput
+
+services httpd restart
 
 popd > /dev/null
 
