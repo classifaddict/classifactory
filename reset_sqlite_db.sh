@@ -1,4 +1,4 @@
-rm db.sqlite3
-python manage.py syncdb --noinput
-python manage.py createsuperuser --username=olivier --email=o@c.com
-python manage.py runserver
+rm project/db.sqlite3
+./venv/bin/python project/manage.py syncdb --noinput
+./venv/bin/python project/python manage.py createsuperuser --username=tree --email=o@c.com
+./venv/bin/python project/python manage.py runserver
