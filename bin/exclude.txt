@@ -1,0 +1,8 @@
+*.pyc
+.git*
+README.md
+reset_pgsql_db.sh
+reset_mysql_db.sh
+venv
+release
+exclude.txt

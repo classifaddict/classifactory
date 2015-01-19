@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# Fail fast and fail hard.
+set -eo pipefail
+
+BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
+ROOT_DIR=$(dirname $BIN_DIR)
+
+HOSTNAME=`hostname`
+VENV_DIR=venv
+PYTHON_EXE=python2.6
+APP_NAME=tree
+APP_DIR=/data/tree
+
+echo "Creating mysql database"
+mysql -u root -p <<EOF
+DROP DATABASE IF EXISTS tree;
+CREATE DATABASE tree CHARSET utf8 COLLATE utf8_unicode_ci;
+GRANT ALL PRIVILEGES ON tree.* to 'tree'@'localhost' IDENTIFIED BY 'tree';
+EOF
+
+/sbin/chkconfig --level 2345 mysqld on
+/etc/init.d/mysqld start
+
+pushd $ROOT_DIR > /dev/null
+
+mkdir -p $VENV_DIR
+
+VENV_OPTIONS="-p $(which $PYTHON_EXE) --never-download --distribute --no-site-packages"
+
+unzip dist/virtualenv.zip -d dist
+
+python dist/virtualenv-master/virtualenv.py $VENV_OPTIONS --prompt="($APP_NAME)" $VENV_DIR
+
+$VENV_DIR/bin/pip install --no-index --find-links dist -r requirements.txt
+
+$VENV_DIR/bin/python project/manage.py syncdb
+$VENV_DIR/bin/python project/manage.py collectstatic --noinput
+
+echo "Setting up httpd"
+cat > /etc/httpd/conf.d/wsgi-tree.conf <<EOF
+Include $APP_DIR/bin/httpd.conf
+EOF
+services httpd start
+
+touch project/app_main/wsgi.py
+
+popd > /dev/null
+

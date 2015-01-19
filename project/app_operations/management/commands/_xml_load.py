@@ -1,5 +1,7 @@
 import os
+import zipfile
 from hashlib import md5
+from string import Template
 
 from lxml import etree
 from django.conf import settings
@@ -8,7 +10,9 @@ from app_tree.models import Doctype, ElementType, AttributeType
 from app_tree.models import Dataset, Element, Attribute, Text, TreeNode
 
 doctypes = {
-    'ipcr_scheme': {
+    'ipc_scheme': {
+        'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
+        'file_basename': Template('ipcr_scheme_$version'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'main_attrs': ['dataset_version', 'symbol'],
         'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
@@ -71,10 +75,10 @@ def store_element(elt, dataset, parent=None):
         )
 
     if element.exists():
-        #element_is_new = False
+        # element_is_new = False
         e = element[0]
     else:
-        #element_is_new = True
+        # element_is_new = True
         e = Element.objects.create(elt_type=elt_type)
         e.attributes = attrs
         if texts:
@@ -124,13 +128,22 @@ def store_element(elt, dataset, parent=None):
 
 def load(doctype_name, dataset_version, file_extension='xml'):
     parser = etree.XMLParser(remove_blank_text=True)
-    tree = etree.parse(
-        os.path.join(
-            settings.DATA_DIR,
-            doctype_name + '_' + dataset_version + '.' + file_extension
-        ),
-        parser
+
+    file_basename = doctypes[doctype_name]['file_basename'].substitute(version=dataset_version)
+
+    path_basename = os.path.join(
+        settings.DATA_DIR,
+        doctypes[doctype_name]['data_path'].substitute(version=dataset_version),
+        file_basename
     )
+
+    if file_extension == 'zip':
+        zip_file = zipfile.ZipFile(path_basename + '.' + file_extension)
+        file_obj = zip_file.open(file_basename + '.xml')
+    else:
+        file_obj = open(path_basename + '.' + file_extension)
+
+    tree = etree.parse(file_obj, parser)
     root = tree.getroot()
 
     doctype, c = Doctype.objects.get_or_create(name=doctype_name)

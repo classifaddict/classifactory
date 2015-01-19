@@ -100,7 +100,7 @@ def element_fancy_search(request, query):
             p = param.split('=')
             r = r.filter(
                 element__attributes__att_type__name=p[0],
-                element__attributes__value=p[1].upper()
+                element__attributes__value=p[1]
             )
 
         if r.exists():
