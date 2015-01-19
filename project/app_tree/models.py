@@ -116,12 +116,16 @@ class Element(models.Model):
         return self.elt_type.name
 
 
-# class Diff(models.Model):
-#     dataset = models.ForeignKey('Dataset', related_name='diffs')
-#     treenode = models.ForeignKey('TreeNode', related_name='diffs')
-#     is_texts = models.BooleanField(default=False)
-#     is_attrs = models.BooleanField(default=False)
-#     is_struct = models.BooleanField(default=False)
+class Diff(models.Model):
+    treenode1 = models.ForeignKey('TreeNode', related_name='tree1_diffs')
+    treenode2 = models.ForeignKey('TreeNode', related_name='tree2_diffs')
+    elt_type_is_diff = models.BooleanField(default=False)
+    texts_is_diff = models.BooleanField(default=False)
+    attrs_is_diff = models.BooleanField(default=False)
+    struct_is_diff = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('treenode1', 'treenode2')
 
 
 class TreeNode(MPTTModel):

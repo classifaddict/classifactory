@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django_mptt_admin.admin import DjangoMpttAdmin
-from models import Element, Attribute, Text, Translation, Doctype, TreeNode, Dataset
+from models import Element, Attribute, Text, Translation, Doctype, TreeNode, Dataset, Diff
 
 
 class DoctypeAdmin(admin.ModelAdmin):
@@ -43,4 +43,10 @@ class TextAdmin(admin.ModelAdmin):
     list_display = ('name', 'contents')
 
 admin.site.register(Text, TextAdmin)
+
+
+class DiffAdmin(admin.ModelAdmin):
+    list_display = ('treenode1', 'treenode2', 'elt_type_is_diff', 'texts_is_diff', 'attrs_is_diff', 'struct_is_diff')
+
+admin.site.register(Diff, DiffAdmin)
 

@@ -10,6 +10,7 @@ DROP TABLE app_tree_element_texts CASCADE;
 DROP TABLE app_tree_element_attributes CASCADE;
 DROP TABLE app_tree_element CASCADE;
 DROP TABLE app_tree_dataset CASCADE;
+DROP TABLE app_tree_diff CASCADE;
 DROP TABLE app_tree_treenode CASCADE;
 EOF
 ./venv/bin/python project/manage.py syncdb

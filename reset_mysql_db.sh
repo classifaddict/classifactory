@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS app_tree_element_texts;
 DROP TABLE IF EXISTS app_tree_element_attributes;
 DROP TABLE IF EXISTS app_tree_element;
 DROP TABLE IF EXISTS app_tree_dataset;
+DROP TABLE IF EXISTS app_tree_diff;
 DROP TABLE IF EXISTS app_tree_treenode;
 SET FOREIGN_KEY_CHECKS = 1;
 EOF
