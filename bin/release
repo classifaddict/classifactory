@@ -8,16 +8,16 @@ BIN_DIR=$(cd $(dirname $0); pwd) # absolute path
 ROOT_DIR=$(dirname $BIN_DIR)
 
 pushd $ROOT_DIR > /dev/null
-  [[ ! -d dist ]] && mkdir dist
+  [[ ! -d bin/dist ]] && mkdir bin/dist
 
-  if ! [ -f dist/virtualenv.zip ]; then
+  if ! [ -f bin/dist/virtualenv.zip ]; then
     echo "Downloading/unpacking virtualenv"
     wget https://github.com/pypa/virtualenv/archive/master.zip \
-        -O dist/virtualenv.zip
+        -O bin/dist/virtualenv.zip
   fi
 
   if [ "$1" != "dist_ok" ]; then
-    venv/bin/pip install --no-install --download dist -r requirements.txt
+    venv/bin/pip install --no-install --download bin/dist -r bin/requirements.txt
   fi
   echo "Creating archive..."
   tar -czf ../tree.tar.gz -X bin/exclude.txt .

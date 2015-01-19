@@ -32,11 +32,11 @@ mkdir -p $VENV_DIR
 
 VENV_OPTIONS="-p $(which $PYTHON_EXE) --never-download --distribute --no-site-packages"
 
-unzip dist/virtualenv.zip -d dist
+unzip dist/virtualenv.zip -d bin/dist
 
-python dist/virtualenv-master/virtualenv.py $VENV_OPTIONS --prompt="($APP_NAME)" $VENV_DIR
+python bin/dist/virtualenv-master/virtualenv.py $VENV_OPTIONS --prompt="($APP_NAME)" $VENV_DIR
 
-$VENV_DIR/bin/pip install --no-index --find-links dist -r requirements.txt
+$VENV_DIR/bin/pip install --no-index --find-links bin/dist -r bin/requirements.txt
 
 echo "Removing compilation material"
 yum -y remove gcc libxml2-devel libxslt-devel \
