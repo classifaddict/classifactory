@@ -14,114 +14,96 @@ doctypes = {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
         'file_basename': Template('ipcr_scheme_$version'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
-        'main_attrs': ['dataset_version', 'symbol'],
-        'except_attr': ['lang', 'ipcLevel', 'priorityOrder'],
-        'except_attr_val': [],
-        'data_elt': ['text', 'references', 'entryReference']
+        'main_attrs': ['symbol'],
+        'skip_attrs': ['edition'],
+        'remove_attrs': ['lang', 'ipcLevel', 'priorityOrder'],
+        'remove_attrs_val': [],
+        'mixed_elts': ['text', 'references', 'entryReference']
     }
 }
 
 
 def store_element(elt, dataset, parent=None):
 
-    # Search for an element with same attributes and contents
-    # If found then use it or create a new one
+    # Search for element type with or create a new one
     elt_type, c = ElementType.objects.get_or_create(
         doctype=dataset.doctype,
         name=elt.tag
     )
+    if elt.tag in doctypes[dataset.doctype.name]['mixed_elts']:
+        elt_type.is_mixed = True
+        elt_type.save()
+    if elt.tag in doctypes[dataset.doctype.name]['main_elts']:
+        elt_type.is_main = True
+        elt_type.save()
 
+    # Search for an element with same attributes
     element = Element.objects.filter(elt_type=elt_type)
 
     attrs = []
     for name, value in elt.items():
-        # value = value.upper()
-        if name not in doctypes[dataset.doctype.name]['except_attr'] \
-            and value \
-            and not (name, value) in doctypes[dataset.doctype.name]['except_attr_val']:
-
+        if name not in doctypes[dataset.doctype.name]['remove_attrs']:
             att_type, c = AttributeType.objects.get_or_create(
                 doctype=dataset.doctype,
                 name=name
             )
+            if name in doctypes[dataset.doctype.name]['main_attrs']:
+                att_type.is_main = True
+                att_type.save()
+            if name in doctypes[dataset.doctype.name]['skip_attrs']:
+                att_type.skip = True
+                att_type.save()
 
-            elt_type.attributes.add(att_type)
+            if value and not (name, value) in doctypes[dataset.doctype.name]['remove_attrs_val']:
+                elt_type.attributes.add(att_type)
 
-            element = element.filter(
-                attributes__att_type=att_type,
-                attributes__value=value
-            )
+                a, c = Attribute.objects.get_or_create(
+                    att_type=att_type,
+                    value=value
+                )
 
-            a, c = Attribute.objects.get_or_create(
-                att_type=att_type,
-                value=value
-            )
-            attrs.append(a)
+                element = element.filter(attributes=a)
+                attrs.append(a)
 
     elt_type.save()
 
-    texts = None
-    texts_name = None
-    if elt.tag in doctypes[dataset.doctype.name]['data_elt']:
-        texts = etree.tostring(elt).replace(
+    # Search for an element with same mixed contents
+    text = None
+    if elt_type.is_mixed:
+        contents = etree.tostring(elt).replace(
             '<%s>' % elt.tag, ''
         ).replace(
             '</%s>' % elt.tag, ''
         )
-        texts_name = md5(texts).hexdigest()
-        element = element.filter(
-            text__doctype=dataset.doctype,
-            text__name=texts_name
+        text, c = Text.objects.get_or_create(
+            doctype=dataset.doctype,
+            name=md5(contents).hexdigest(),
+            contents=contents
         )
 
+        element = element.filter(text=text)
+
+    # If element exists then use it or create a new one
     if element.exists():
         # element_is_new = False
         e = element[0]
     else:
         # element_is_new = True
-        e = Element.objects.create(elt_type=elt_type)
+        e = Element.objects.create(
+            elt_type=elt_type,
+            text=text
+        )
         e.attributes = attrs
-        if texts:
-            t, c = Text.objects.get_or_create(
-                doctype=dataset.doctype,
-                name=texts_name,
-                contents=texts
-            )
-            e.text = t
         e.save()
 
-    def create_treenode():
-        return TreeNode.objects.create(
-            parent=parent,
-            dataset=dataset,
-            element=e,
-            is_lazy=elt.tag in dataset.doctype.main_elts.split()
-        )
-
     # Attach the element to a treenode
-    treenode = create_treenode()
+    treenode = TreeNode.objects.create(
+        parent=parent,
+        dataset=dataset,
+        element=e
+    )
 
-    # Instead of creating a whole new tree (using create_treenode alone)
-    # we could try to merge with an existing one to ease furure diffing:
-    ###################################################################
-    # if parent is None:
-    #     # Get or create the root node and attach the element to it
-    #     rootnode = TreeNode.objects.root_nodes().filter(dataset__doctype=dataset.doctype)
-    #     if rootnode.exists():
-    #         # Merge all trees of the same doctype
-    #         treenode = rootnode[0]
-    #     else:
-    #         # Create a new root node
-    #         treenode = create_treenode()
-    # elif element_is_new:
-    #     treenode = create_treenode()
-    # elif texts and not parent.get_children().filter(element=e).exists():
-    #     # Verify that a child node does not already contain it
-    #     treenode = create_treenode()
-    # else:
-    #     treenode = create_treenode()
-
-    if texts is None:
+    if not elt_type.is_mixed:
         for child in elt:
             store_element(child, dataset, parent=treenode)
 
@@ -147,9 +129,6 @@ def load(doctype_name, dataset_version, file_extension='xml'):
     root = tree.getroot()
 
     doctype, c = Doctype.objects.get_or_create(name=doctype_name)
-    doctype.main_attrs = ' '.join(doctypes[doctype_name]['main_attrs'])
-    doctype.main_elts = ' '.join(doctypes[doctype_name]['main_elts'])
-    doctype.save()
 
     dataset, c = Dataset.objects.get_or_create(
         doctype=doctype,

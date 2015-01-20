@@ -13,17 +13,13 @@ class AbstractType(models.Model):
 
 
 class Doctype(AbstractType):
-    main_attrs = models.CharField(max_length=128)
-    main_elts = models.CharField(max_length=512)
+    pass
 
 
 class AttributeType(AbstractType):
     doctype = models.ForeignKey('Doctype', related_name='attribute_types')
-
-    def is_main(self):
-        if self.name in self.doctype.main_attrs.split():
-            return True
-        return False
+    is_main = models.BooleanField(default=False)
+    skip = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('doctype', 'name')
@@ -34,7 +30,8 @@ class ElementType(AbstractType):
     doctype = models.ForeignKey('Doctype', related_name='element_types')
     attributes = models.ManyToManyField('AttributeType', related_name='element_types', null=True, blank=True)
     required_attr = models.ManyToManyField('AttributeType', null=True, blank=True)
-    #is_mixed_contents = models.BooleanField(default=False)
+    is_main = models.BooleanField(default=False)
+    is_mixed = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('doctype', 'name')
@@ -56,12 +53,9 @@ class Attribute(models.Model):
     att_type = models.ForeignKey('AttributeType', related_name='attribute_instances')
     value = models.CharField(max_length=128)
 
-    def is_main(self):
-        return self.att_type.is_main()
-
     def attr_html(self):
         cls = ''
-        if self.is_main():
+        if self.att_type.is_main:
             cls = ' class="main"'
         return '<dt>%s</dt><dd%s>%s</dd>' % (self.att_type.name, cls, self.value)
 
@@ -132,18 +126,11 @@ class TreeNode(MPTTModel):
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
     element = models.ForeignKey('Element', related_name='treenodes')
     dataset = models.ForeignKey('Dataset', related_name='treenodes')
-    is_lazy = models.BooleanField()
-
-    # @property
-    # def is_lazy(self):
-    #     if self.element.name in self.element.doctype.main_elts.split():
-    #         return True
-    #     return False
 
     def lazy_children(self):
-        if self.is_lazy and not self.is_root_node():
-            return self.get_children().exclude(parent__element__elt_type=self.element.elt_type)
-        return self.get_children()
+        if not self.element.elt_type.is_main or self.is_root_node():
+            return self.get_children()
+        return self.get_children().exclude(parent__element__elt_type=self.element.elt_type)
 
     def is_container(self):
         if self.is_leaf_node():
@@ -151,7 +138,7 @@ class TreeNode(MPTTModel):
         return True
 
     def expanded(self):
-        if self.is_lazy or self.is_root_node():
+        if self.element.elt_type.is_main or self.is_root_node():
             return False
         return True
 
