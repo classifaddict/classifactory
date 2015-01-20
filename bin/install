@@ -32,7 +32,7 @@ mkdir -p $VENV_DIR
 
 VENV_OPTIONS="-p $(which $PYTHON_EXE) --never-download --distribute --no-site-packages"
 
-unzip dist/virtualenv.zip -d bin/dist
+unzip bin/dist/virtualenv.zip -d bin/dist
 
 python bin/dist/virtualenv-master/virtualenv.py $VENV_OPTIONS --prompt="($APP_NAME)" $VENV_DIR
 
