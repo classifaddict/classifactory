@@ -69,13 +69,13 @@
 	$(function(){
 		$("#tree").fancytree({
 	        source: {
-	        url: "/tree/elements/fancy/roots/",
+	        url: "{% url 'roots' %}",
 	        cache: false
 	      },
 	      lazyLoad: function(event, data){
 		      var node = data.node;
 		      data.result = {
-		        url: "/tree/elements/fancy/" + node.key + "/",
+		        url: "{% url 'home' %}" + node.key + "/",
 		        cache: false
 		      };
 	      },
@@ -109,7 +109,7 @@
 
 		$("#search").submit(function(event) {
 			var query = $("input").val();
-			$.getJSON("/tree/elements/fancy/search/" + query + "/", function(data) {
+			$.getJSON("{% url 'home' %}search/" + query + "/", function(data) {
 				var tree = $("#tree").fancytree("getTree");
 				reach_node(tree, data);
 			});
