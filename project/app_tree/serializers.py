@@ -45,10 +45,14 @@ class KeySerializer(serializers.Serializer):
 
 
 class ChildFancySerializer(KeySerializer):
+    # FancyTree specific values
     title = serializers.CharField(source='element.elt_type.name')
     folder = serializers.BooleanField(source='is_container')
-    attrs = serializers.CharField(source='element.attributes_html')
-    data = HtmlDataSerializer(source='element.text')
     lazy = serializers.BooleanField(source='element.elt_type.is_main')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)
+
+    # Subsequent FancyTreeTable columns values
+    attrs = serializers.CharField(source='element.attributes_html')
+    text = serializers.CharField(source='element.text.texts_html')
+    textdiff = serializers.CharField()

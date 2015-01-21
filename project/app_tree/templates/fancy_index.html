@@ -58,6 +58,13 @@
 		dl.showattr dd {
 			display: block;
 		}
+		ins {
+			color: green;
+			text-decoration: none;
+		}
+		del {
+			color: red;
+		}
 		/*table.fancytree-ext-table tbody tr td {
 			border: 0 none transparent;
 		}*/
@@ -96,7 +103,7 @@
 				$tdList.eq(0).addClass("symbol");
 				$tdList.eq(1).html(node.data.attrs);
 				if (node.data.text) $tdList.eq(2).html(node.data.text);
-				//if (node.data[1]) $tdList.eq(3).html(node.data[1].texts);
+				if (node.data.textdiff) $tdList.eq(3).html(node.data.textdiff);
 			},
 			click: function(event, data) {
 				// data.targetType is undefined when clicked column is not the main node one

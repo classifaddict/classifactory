@@ -2,11 +2,11 @@ from app_tree.models import Doctype, Element, Attribute, Text, TreeNode, Diff
 
 
 def diff(node1, node2, main_attr=''):
-    elt_name = node1.element.elt_type.name
-
     main_attrs = node1.element.attributes.filter(att_type__is_main=True)
     if main_attrs.exists():
-    	main_attr = ' ' + ' '.join([a.value for a in main_attrs])
+        main_attr = ' ' + ' '.join([a.value for a in main_attrs])
+
+    elt_name = node1.element.elt_type.name
     location = elt_name + main_attr
 
     diff_obj = Diff(treenode1=node1, treenode2=node2)
@@ -35,21 +35,31 @@ def diff(node1, node2, main_attr=''):
         diff_obj.struct_is_diff = True
         diff_obj.save()
 
+        count1 = node1.get_children().count()
+        count2 = node2.get_children().count()
+
+        if count1 != count2:
+            s1 = set([n.element for n in node1.get_leafnodes()])
+            s2 = set([n.element for n in node2.get_leafnodes()])
+            symdiff = s1.symmetric_difference(s2)
+
+            print count1, count2, len(symdiff)
+
+            if count1 > count2:
+                print location + ' (tree #1) ' + ' has ' + str(count1 - count2) + ' node(s) more.'
+                if len(symdiff) == count1 - count2:
+                	#TODO: Add TreeNodes to tree2 at the same position
+                	#      with an empty leaf node
+                	pass
+            else:
+                print location + ' (tree #2) ' + ' has ' + str(count2 - count1) + ' node(s) more.'
+                if len(symdiff) == count2 - count1:
+                	#TODO: Add TreeNodes to tree1 at the same position
+                	#      with an empty leaf node
+                	pass
+
     for nodes in zip(node1.get_children(), node2.get_children()):
         diff(nodes[0], nodes[1], main_attr)
-
-    count1 = node1.get_children().count()
-    count2 = node2.get_children().count()
-    if count1 > count2:
-        print location + ' (tree #1) ' + ' has ' + str(count1 - count2) + ' node(s) more.'
-    elif count2 > count1:
-        print location + ' (tree #2) ' + ' has ' + str(count2 - count1) + ' node(s) more.'
-
-
-    # s1 = set(node1.get_children())
-    # s2 = set(node2.get_children())
-    # symdiff = s1.symmetric_difference(s2)
-    # print symdiff
 
 
 def diff_trees(doctype_name, dataset_version1, dataset_version2):

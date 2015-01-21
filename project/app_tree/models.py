@@ -1,3 +1,4 @@
+from lxml.html.diff import htmldiff
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 
@@ -126,6 +127,7 @@ class TreeNode(MPTTModel):
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
     element = models.ForeignKey('Element', related_name='treenodes')
     dataset = models.ForeignKey('Dataset', related_name='treenodes')
+    # diff_only = models.BooleanField(default=False)
 
     def lazy_children(self):
         if not self.element.elt_type.is_main or self.is_root_node():
@@ -141,6 +143,16 @@ class TreeNode(MPTTModel):
         if self.element.elt_type.is_main or self.is_root_node():
             return False
         return True
+
+    def textdiff(self):
+        diffs = self.tree2_diffs.filter(texts_is_diff=True)
+        if diffs.exists():
+            diff = diffs.first()
+            return htmldiff(
+                diff.treenode1.element.text.texts_html(),
+                diff.treenode2.element.text.texts_html()
+            )
+        return None
 
     def __unicode__(self):
         return self.element.elt_type.name
