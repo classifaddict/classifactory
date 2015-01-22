@@ -1,6 +1,15 @@
 from django.contrib import admin
 from django_mptt_admin.admin import DjangoMpttAdmin
-from models import Element, Attribute, Text, Translation, Doctype, TreeNode, Dataset, Diff
+
+from models import Dataset, Doctype, ElementType, AttributeType
+from models import Element, Attribute, Text, Translation
+from models import TreeNode, Diff
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+
+admin.site.register(Dataset, DatasetAdmin)
 
 
 class DoctypeAdmin(admin.ModelAdmin):
@@ -9,10 +18,16 @@ class DoctypeAdmin(admin.ModelAdmin):
 admin.site.register(Doctype, DoctypeAdmin)
 
 
-class DatasetAdmin(admin.ModelAdmin):
-    list_display = ('name', )
+class ElementTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_main', 'is_mixed', 'doctype')
 
-admin.site.register(Dataset, DatasetAdmin)
+admin.site.register(ElementType, ElementTypeAdmin)
+
+
+class AttributeTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_main', 'skip', 'doctype')
+
+admin.site.register(AttributeType, AttributeTypeAdmin)
 
 
 class TreeNodeAdmin(DjangoMpttAdmin):

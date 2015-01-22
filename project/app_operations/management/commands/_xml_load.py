@@ -9,7 +9,7 @@ from django.conf import settings
 from app_tree.models import Doctype, ElementType, AttributeType
 from app_tree.models import Dataset, Element, Attribute, Text, TreeNode
 
-doctypes = {
+doctypes_conf = {
     'ipc_scheme': {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
         'file_basename': Template('ipcr_scheme_$version'),
@@ -23,58 +23,68 @@ doctypes = {
 }
 
 
-def store_element(elt, dataset, parent=None):
+def store_element(elt, dataset, dt_conf, parent=None):
 
-    # Search for element type with or create a new one
+    # Get or create element type object
     elt_type, c = ElementType.objects.get_or_create(
         doctype=dataset.doctype,
         name=elt.tag
     )
-    if elt.tag in doctypes[dataset.doctype.name]['mixed_elts']:
+    # Update element type object from input occurence
+    # (will be saved after attributes object are collected too)
+    if elt.tag in dt_conf['mixed_elts']:
         elt_type.is_mixed = True
-        elt_type.save()
-    if elt.tag in doctypes[dataset.doctype.name]['main_elts']:
+    if elt.tag in dt_conf['main_elts']:
         elt_type.is_main = True
-        elt_type.save()
 
-    # Search for an element with same attributes
+    # Search for an element of same type...
     element = Element.objects.filter(elt_type=elt_type)
 
+    # ... and with same attribute(s)
     attrs = []
     for name, value in elt.items():
-        if name not in doctypes[dataset.doctype.name]['remove_attrs']:
-            att_type, c = AttributeType.objects.get_or_create(
-                doctype=dataset.doctype,
-                name=name
-            )
-            if name in doctypes[dataset.doctype.name]['main_attrs']:
-                att_type.is_main = True
-                att_type.save()
-            if name in doctypes[dataset.doctype.name]['skip_attrs']:
-                att_type.skip = True
-                att_type.save()
+        if not value or name in dt_conf['remove_attrs'] or (name, value) in dt_conf['remove_attrs_val']:
+            continue
 
-            if value and not (name, value) in doctypes[dataset.doctype.name]['remove_attrs_val']:
-                elt_type.attributes.add(att_type)
+        # Get or create attribute type object
+        att_type, c = AttributeType.objects.get_or_create(
+            doctype=dataset.doctype,
+            name=name
+        )
 
-                a, c = Attribute.objects.get_or_create(
-                    att_type=att_type,
-                    value=value
-                )
+        # Update element type object with attribute type object
+        elt_type.attributes.add(att_type)
 
-                element = element.filter(attributes=a)
-                attrs.append(a)
+        # Update attribute type object from input occurence
+        if name in dt_conf['main_attrs']:
+            att_type.is_main = True
+        if name in dt_conf['skip_attrs']:
+            att_type.skip = True
+        att_type.save()
+
+        # Get or create attribute object
+        a, c = Attribute.objects.get_or_create(
+            att_type=att_type,
+            value=value
+        )
+
+        element = element.filter(attributes=a)
+        attrs.append(a)
 
     elt_type.save()
 
-    # Search for an element with same mixed contents
+    # ... and with same text
     text = None
     if elt_type.is_mixed:
+        # Serialize descendance as string, removing root tags
         contents = etree.tostring(elt).replace(
             '<%s>' % elt.tag, ''
         ).replace(
             '</%s>' % elt.tag, ''
         )
+        # TODO: remove leading and trailing (non-breaking #160 #xA0) spaces
+
+        # Get or create text object
         text, c = Text.objects.get_or_create(
             doctype=dataset.doctype,
             name=md5(contents).hexdigest(),
@@ -96,7 +106,7 @@ def store_element(elt, dataset, parent=None):
         e.attributes = attrs
         e.save()
 
-    # Attach the element to a treenode
+    # Attach the element to a new treenode
     treenode = TreeNode.objects.create(
         parent=parent,
         dataset=dataset,
@@ -105,17 +115,19 @@ def store_element(elt, dataset, parent=None):
 
     if not elt_type.is_mixed:
         for child in elt:
-            store_element(child, dataset, parent=treenode)
+            store_element(child, dataset, dt_conf, parent=treenode)
 
 
 def load(doctype_name, dataset_version, file_extension='xml'):
+    dt_conf = doctypes_conf[doctype_name]
+
     parser = etree.XMLParser(remove_blank_text=True)
 
-    file_basename = doctypes[doctype_name]['file_basename'].substitute(version=dataset_version)
+    file_basename = dt_conf['file_basename'].substitute(version=dataset_version)
 
     path_basename = os.path.join(
         settings.DATA_DIR,
-        doctypes[doctype_name]['data_path'].substitute(version=dataset_version),
+        dt_conf['data_path'].substitute(version=dataset_version),
         file_basename
     )
 
@@ -135,4 +147,4 @@ def load(doctype_name, dataset_version, file_extension='xml'):
         name=dataset_version
     )
 
-    store_element(root, dataset)
+    store_element(root, dataset, dt_conf)
