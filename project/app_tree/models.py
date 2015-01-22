@@ -127,7 +127,7 @@ class TreeNode(MPTTModel):
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
     element = models.ForeignKey('Element', related_name='treenodes')
     dataset = models.ForeignKey('Dataset', related_name='treenodes')
-    # diff_only = models.BooleanField(default=False)
+    diff_only = models.BooleanField(default=False)
 
     def lazy_children(self):
         if not self.element.elt_type.is_main or self.is_root_node():
@@ -144,6 +144,7 @@ class TreeNode(MPTTModel):
             return False
         return True
 
+    #TODO: attr diff
     def textdiff(self):
         diffs = self.tree2_diffs.filter(texts_is_diff=True)
         if diffs.exists():

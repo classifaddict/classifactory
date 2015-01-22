@@ -28,35 +28,49 @@ def diff(node1, node2, main_attr=''):
             diff_obj.texts_is_diff = True
             diff_obj.save()
 
-    elts_children1 = [(n.element.text, list(n.element.attributes.exclude(att_type__skip=True))) for n in node1.get_children()]
-    elts_children2 = [(n.element.text, list(n.element.attributes.exclude(att_type__skip=True))) for n in node2.get_children()]
-    if elts_children1 != elts_children2:
+    def value(node):
+        return (
+            node.element.elt_type,
+            node.element.text,
+            list(node.element.attributes.exclude(att_type__skip=True))
+        )
+
+    def values(node):
+        return [
+            value(n) for n in node.get_children()
+        ]
+
+    if values(node1) != values(node2):
         print location + ' children differ.'
         diff_obj.struct_is_diff = True
         diff_obj.save()
 
-        count1 = node1.get_children().count()
-        count2 = node2.get_children().count()
+    def create_shadow(node, dataset):
+        t = None
+        if node.element.elt_type.is_mixed:
+            t, c = Text.objects.get_or_create(contents='', name='empty', doctype=node.element.elt_type.doctype)
+        e, c = Element.objects.get_or_create(elt_type=node.element.elt_type, text=t)
+        return TreeNode(element=e, dataset=dataset, diff_only=True)
 
-        if count1 != count2:
-            s1 = set([n.element for n in node1.get_leafnodes()])
-            s2 = set([n.element for n in node2.get_leafnodes()])
-            symdiff = s1.symmetric_difference(s2)
+    nb1 = node1.get_children().count()
+    nb2 = node2.get_children().count()
+    i = 0
+    imax = nb1 - nb2
+    while nb1 > nb2:
+        if i == imax: break
+        i += 1
+        for nodes in zip(node1.get_children(), node2.get_children()):
+        	#TODO: something smarter for text node
+            if value(nodes[0]) != value(nodes[1]) and not nodes[0].element.elt_type.is_mixed:
+                n = create_shadow(nodes[0], nodes[1].dataset)
+                n.insert_at(nodes[1], position='left', save=True)
+                nb2 += 1
+                break
 
-            print count1, count2, len(symdiff)
-
-            if count1 > count2:
-                print location + ' (tree #1) ' + ' has ' + str(count1 - count2) + ' node(s) more.'
-                if len(symdiff) == count1 - count2:
-                	#TODO: Add TreeNodes to tree2 at the same position
-                	#      with an empty leaf node
-                	pass
-            else:
-                print location + ' (tree #2) ' + ' has ' + str(count2 - count1) + ' node(s) more.'
-                if len(symdiff) == count2 - count1:
-                	#TODO: Add TreeNodes to tree1 at the same position
-                	#      with an empty leaf node
-                	pass
+    while nb1 > nb2:
+        n = create_shadow(node1.get_children().last(), node2.dataset)
+        n.insert_at(node2, position='last-child', save=True)
+        nb2 += 1
 
     for nodes in zip(node1.get_children(), node2.get_children()):
         diff(nodes[0], nodes[1], main_attr)
