@@ -71,13 +71,13 @@ def store_element(elt, dataset, dt_conf, parent=None):
     # Get or create texts
     text = None
     if elt_type.is_mixed:
-        # Serialize descendance as string, removing root tags
+        # Serialize descendance as string, removing root element tags
+        # and stripping normal and non-breaking spaces
         contents = etree.tostring(elt).replace(
             '<%s>' % elt.tag, ''
         ).replace(
             '</%s>' % elt.tag, ''
-        )
-        # TODO: remove leading and trailing (non-breaking #160 #xA0) spaces
+        ).strip(u'\xA0 ')
 
         # Get or create text object
         text, c = Text.objects.get_or_create(
