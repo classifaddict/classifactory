@@ -46,9 +46,9 @@ class KeySerializer(serializers.Serializer):
 
 class ChildFancySerializer(KeySerializer):
     # FancyTree specific values
-    title = serializers.CharField(source='element.elt_type.name')
+    title = serializers.CharField(source='element.type.name')
     folder = serializers.BooleanField(source='is_container')
-    lazy = serializers.BooleanField(source='element.elt_type.is_main')
+    lazy = serializers.BooleanField(source='element.type.is_main')
     expanded = serializers.BooleanField()
     children = RecursiveField(source='lazy_children', required=False, many=True)
 

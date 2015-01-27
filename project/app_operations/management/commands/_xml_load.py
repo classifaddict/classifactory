@@ -14,8 +14,9 @@ doctypes_conf = {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
         'file_basename': Template('ipcr_scheme_$version'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
+        'remove_elts': ['fr'],
         'main_attrs': ['symbol'],
-        'skip_attrs': ['edition'],
+        'skip_attrs': [], # ['edition'],
         'remove_attrs': ['lang', 'ipcLevel', 'priorityOrder'],
         'remove_attrs_val': [],
         'mixed_elts': ['text', 'references', 'entryReference']
@@ -37,15 +38,10 @@ def store_element(elt, dataset, dt_conf, parent=None):
     if elt.tag in dt_conf['main_elts']:
         elt_type.is_main = True
 
-    # Search for an element of same type...
-    element = Element.objects.filter(elt_type=elt_type)
-
-    # ... and with same attribute(s)
+    # Get or create attribute(s) and collect them
     attrs = []
-    for name, value in elt.items():
-        if not value or name in dt_conf['remove_attrs'] or (name, value) in dt_conf['remove_attrs_val']:
-            continue
-
+    attributes = [(k, elt.get(k)) for k in sorted(elt.keys()) if elt.get(k) and k not in dt_conf['remove_attrs'] and (k, elt.get(k)) not in dt_conf['remove_attrs_val']]
+    for name, value in attributes:
         # Get or create attribute type object
         att_type, c = AttributeType.objects.get_or_create(
             doctype=dataset.doctype,
@@ -64,16 +60,15 @@ def store_element(elt, dataset, dt_conf, parent=None):
 
         # Get or create attribute object
         a, c = Attribute.objects.get_or_create(
-            att_type=att_type,
+            type=att_type,
             value=value
         )
 
-        element = element.filter(attributes=a)
         attrs.append(a)
 
     elt_type.save()
 
-    # ... and with same text
+    # Get or create texts
     text = None
     if elt_type.is_mixed:
         # Serialize descendance as string, removing root tags
@@ -91,18 +86,15 @@ def store_element(elt, dataset, dt_conf, parent=None):
             contents=contents
         )
 
-        element = element.filter(text=text)
-
     # If element exists then use it or create a new one
-    if element.exists():
-        # element_is_new = False
-        e = element[0]
-    else:
-        # element_is_new = True
-        e = Element.objects.create(
-            elt_type=elt_type,
-            text=text
-        )
+    e, created = Element.objects.get_or_create(
+        type=elt_type,
+        text=text,
+        attrs_key=md5(''.join([
+            a.type.name + a.value for a in attrs
+    ])).hexdigest())
+
+    if created:
         e.attributes = attrs
         e.save()
 
@@ -115,7 +107,8 @@ def store_element(elt, dataset, dt_conf, parent=None):
 
     if not elt_type.is_mixed:
         for child in elt:
-            store_element(child, dataset, dt_conf, parent=treenode)
+            if elt.tag not in dt_conf['remove_elts']:
+                store_element(child, dataset, dt_conf, parent=treenode)
 
 
 def load(doctype_name, dataset_version, file_extension='xml'):

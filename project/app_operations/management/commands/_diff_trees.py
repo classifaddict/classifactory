@@ -2,21 +2,21 @@ from app_tree.models import Doctype, Element, Attribute, Text, TreeNode, Diff
 
 
 def diff(node1, node2, main_attr=''):
-    main_attrs = node1.element.attributes.filter(att_type__is_main=True)
+    main_attrs = node1.element.attributes.filter(type__is_main=True)
     if main_attrs.exists():
         main_attr = ' ' + ' '.join([a.value for a in main_attrs])
 
-    elt_name = node1.element.elt_type.name
+    elt_name = node1.element.type.name
     location = elt_name + main_attr
 
     diff_obj = Diff(treenode1=node1, treenode2=node2)
 
-    if elt_name != node2.element.elt_type.name:
-        print location + ' != ' + node2.element.elt_type.name
+    if elt_name != node2.element.type.name:
+        print location + ' != ' + node2.element.type.name
         diff_obj.elt_type_is_diff = True
         diff_obj.save()
     else:
-        if list(node1.element.attributes.exclude(att_type__skip=True)) != list(node2.element.attributes.exclude(att_type__skip=True)):
+        if list(node1.element.attributes.exclude(type__skip=True)) != list(node2.element.attributes.exclude(type__skip=True)):
             print location + ' attributes differ.'
             diff_obj.attrs_is_diff = True
             diff_obj.save()
@@ -30,9 +30,9 @@ def diff(node1, node2, main_attr=''):
 
     def value(node):
         return (
-            node.element.elt_type,
+            node.element.type,
             node.element.text,
-            list(node.element.attributes.exclude(att_type__skip=True))
+            list(node.element.attributes.exclude(type__skip=True))
         )
 
     def values(node):
@@ -47,9 +47,9 @@ def diff(node1, node2, main_attr=''):
 
     def create_shadow(node, dataset):
         t = None
-        if node.element.elt_type.is_mixed:
-            t, c = Text.objects.get_or_create(contents='', name='empty', doctype=node.element.elt_type.doctype)
-        e, c = Element.objects.get_or_create(elt_type=node.element.elt_type, text=t)
+        if node.element.type.is_mixed:
+            t, c = Text.objects.get_or_create(contents='', name='empty', doctype=node.element.type.doctype)
+        e, c = Element.objects.get_or_create(type=node.element.type, text=t)
         return TreeNode(element=e, dataset=dataset, diff_only=True)
 
     nb1 = node1.get_children().count()
@@ -61,7 +61,7 @@ def diff(node1, node2, main_attr=''):
         i += 1
         for nodes in zip(node1.get_children(), node2.get_children()):
         	#TODO: something smarter for text node
-            if value(nodes[0]) != value(nodes[1]) and not nodes[0].element.elt_type.is_mixed:
+            if value(nodes[0]) != value(nodes[1]) and not nodes[0].element.type.is_mixed:
                 n = create_shadow(nodes[0], nodes[1].dataset)
                 n.insert_at(nodes[1], position='left', save=True)
                 nb2 += 1

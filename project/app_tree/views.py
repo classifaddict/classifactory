@@ -81,12 +81,12 @@ def element_fancy_ancestors(request, pk):
     if request.method == 'GET':
         treenode = TreeNode.objects.get(pk=pk)
 
-        # Lazy ancestors (the ones for which element__elt_type__is_main)
+        # Lazy ancestors (the ones for which element__type__is_main)
         # only are returned
         ancestors = treenode.get_ancestors(
             ascending=True,
             include_self=True
-        ).filter(element__elt_type__is_main=True)
+        ).filter(element__type__is_main=True)
 
         serializer = KeySerializer(ancestors, many=True)
         return JSONResponse(serializer.data)
@@ -103,18 +103,18 @@ def element_fancy_search(request, query):
         for param in query.split():
             p = param.split('=')
             r = r.filter(
-                element__attributes__att_type__name=p[0],
+                element__attributes__type__name=p[0],
                 element__attributes__value=p[1]
             )
 
         if r.exists():
-            # Lazy ancestors (the ones for which element__elt_type__is_main)
+            # Lazy ancestors (the ones for which element__type__is_main)
             # only are returned
             treenode = r[0]
             ancestors = treenode.get_ancestors(
                 ascending=True,
                 include_self=True
-            ).filter(element__elt_type__is_main=True)
+            ).filter(element__type__is_main=True)
 
             serializer = KeySerializer(ancestors, many=True)
             return JSONResponse(serializer.data)

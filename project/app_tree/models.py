@@ -24,6 +24,7 @@ class AttributeType(AbstractType):
 
     class Meta:
         unique_together = ('doctype', 'name')
+        index_together = [['doctype', 'name']]
         ordering = ['name']
 
 
@@ -36,6 +37,7 @@ class ElementType(AbstractType):
 
     class Meta:
         unique_together = ('doctype', 'name')
+        index_together = [['doctype', 'name']]
         ordering = ['name']
 
 
@@ -48,24 +50,26 @@ class Dataset(models.Model):
 
     class Meta:
         unique_together = ('doctype', 'name')
+        index_together = [['doctype', 'name']]
 
 
 class Attribute(models.Model):
-    att_type = models.ForeignKey('AttributeType', related_name='attribute_instances')
+    type = models.ForeignKey('AttributeType', related_name='attribute_instances')
     value = models.CharField(max_length=128)
 
     def attr_html(self):
         cls = ''
-        if self.att_type.is_main:
+        if self.type.is_main:
             cls = ' class="main"'
-        return '<dt>%s</dt><dd%s>%s</dd>' % (self.att_type.name, cls, self.value)
+        return '<dt>%s</dt><dd%s>%s</dd>' % (self.type.name, cls, self.value)
 
     def __unicode__(self):
-        return self.att_type.name
+        return self.type.name
 
     class Meta:
-        unique_together = ('att_type', 'value')
-        ordering = ['att_type__name']
+        unique_together = ('type', 'value')
+        index_together = [['type', 'value']]
+        ordering = ['type__name']
 
 
 class Translation(models.Model):
@@ -93,12 +97,14 @@ class Text(models.Model):
 
     class Meta:
         unique_together = ('doctype', 'name')
+        index_together = [['doctype', 'name']]
 
 
 class Element(models.Model):
-    elt_type = models.ForeignKey('ElementType', related_name='element_instances')
-    attributes = models.ManyToManyField('Attribute', null=True, blank=True)
+    type = models.ForeignKey('ElementType', related_name='element_instances')
     text = models.ForeignKey('Text', null=True, blank=True)
+    attrs_key = models.CharField(max_length=32)
+    attributes = models.ManyToManyField('Attribute', null=True, blank=True)
 
     def attributes_html(self):
         if self.attributes.exists():
@@ -108,7 +114,11 @@ class Element(models.Model):
         return None
 
     def __unicode__(self):
-        return self.elt_type.name
+        return self.type.name
+
+    class Meta:
+        unique_together = ('type', 'text', 'attrs_key')
+        index_together = [['type', 'text', 'attrs_key']]
 
 
 class Diff(models.Model):
@@ -130,9 +140,9 @@ class TreeNode(MPTTModel):
     diff_only = models.BooleanField(default=False)
 
     def lazy_children(self):
-        if not self.element.elt_type.is_main or self.is_root_node():
+        if not self.element.type.is_main or self.is_root_node():
             return self.get_children()
-        return self.get_children().exclude(parent__element__elt_type=self.element.elt_type)
+        return self.get_children().exclude(parent__element__type=self.element.type)
 
     def is_container(self):
         if self.is_leaf_node():
@@ -140,7 +150,7 @@ class TreeNode(MPTTModel):
         return True
 
     def expanded(self):
-        if self.element.elt_type.is_main or self.is_root_node():
+        if self.element.type.is_main or self.is_root_node():
             return False
         return True
 
@@ -156,4 +166,4 @@ class TreeNode(MPTTModel):
         return None
 
     def __unicode__(self):
-        return self.element.elt_type.name
+        return self.element.type.name
