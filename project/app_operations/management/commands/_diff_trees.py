@@ -19,7 +19,7 @@ def create_shadow(node, dataset):
     t = None
     if node.element.type.is_mixed:
         t, c = Text.objects.get_or_create(contents='', name='empty', doctype=node.element.type.doctype)
-    e, c = Element.objects.get_or_create(type=node.element.type, text=t)
+    e, c = Element.objects.get_or_create(type=node.element.type, text=t, attrs_key='empty')
     return TreeNode(element=e, dataset=dataset, diff_only=True)
 
 

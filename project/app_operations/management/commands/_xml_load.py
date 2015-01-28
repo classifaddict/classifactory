@@ -92,7 +92,8 @@ def store_element(elt, dataset, dt_conf, parent=None):
         text=text,
         attrs_key=md5(''.join([
             a.type.name + a.value for a in attrs
-    ])).hexdigest())
+        ])).hexdigest()
+    )
 
     if created:
         e.attributes = attrs
