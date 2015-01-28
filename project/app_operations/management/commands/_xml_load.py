@@ -15,8 +15,7 @@ doctypes_conf = {
         'file_basename': Template('ipcr_scheme_$version'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'remove_elts': ['fr'],
-        'main_attrs': ['symbol'],
-        'key_attrs': ['symbol', 'kind'],
+        'main_attrs': ['symbol', 'kind'],
         'skip_attrs': [], # ['edition'],
         'remove_attrs': ['lang', 'ipcLevel', 'priorityOrder'],
         'remove_attrs_val': [],
@@ -92,7 +91,9 @@ def store_element(elt, dataset, dt_conf, parent=None):
         type=elt_type,
         text=text,
         attrs_key=md5(''.join([
-            a.type.name + a.value for a in attrs if a.type.name in dt_conf['key_attrs']
+            a.type.name + a.value for a in attrs])).hexdigest(),
+        main_attrs=md5(''.join([
+            a.type.name + a.value for a in attrs if a.type.name in dt_conf['main_attrs']
         ])).hexdigest()
     )
 

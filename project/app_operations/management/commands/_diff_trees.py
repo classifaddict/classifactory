@@ -5,11 +5,11 @@ def value(node):
     return (
         node.element.type,
         node.element.text,
-        node.element.attrs_key
+        node.element.main_attrs
     )
 
 
-def values(node):
+def children_values(node):
     return [
         value(n) for n in node.get_children()
     ]
@@ -18,8 +18,17 @@ def values(node):
 def create_shadow(node, dataset):
     t = None
     if node.element.type.is_mixed:
-        t, c = Text.objects.get_or_create(contents='', name='empty', doctype=node.element.type.doctype)
-    e, c = Element.objects.get_or_create(type=node.element.type, text=t, attrs_key='empty')
+        t, c = Text.objects.get_or_create(
+        	contents='',
+        	name='empty',
+        	doctype=node.element.type.doctype
+        )
+    e, c = Element.objects.get_or_create(
+    	type=node.element.type,
+    	text=t,
+    	attrs_key=node.element.attrs_key,
+    	main_attrs=node.element.main_attrs
+    )
     return TreeNode(element=e, dataset=dataset, diff_only=True)
 
 
@@ -41,8 +50,8 @@ def diff(node1, node2, main_attr=''):
         return
         # No need to go on if both elements are not of same type
 
-    if node1.element.attrs_key != node2.element.attrs_key:
-        print location + ' key attributes differ.'
+    if node1.element.main_attrs != node2.element.main_attrs:
+        print location + ' main attributes differ.'
         if not node1.is_root_node():
             diff_obj.attrs_is_diff = True
             diff_obj.save()
@@ -56,7 +65,7 @@ def diff(node1, node2, main_attr=''):
         diff_obj.texts_is_diff = True
         diff_obj.save()
 
-    if values(node1) != values(node2):
+    if children_values(node1) != children_values(node2):
         print location + ' children differ.'
         diff_obj.struct_is_diff = True
         diff_obj.save()
