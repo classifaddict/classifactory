@@ -42,9 +42,12 @@ def diff(node1, node2, main_attr=''):
         # No need to go on if both elements are not of same type
 
     if node1.element.attrs_key != node2.element.attrs_key:
-        print location + ' attributes differ.'
-        diff_obj.attrs_is_diff = True
-        diff_obj.save()
+        print location + ' key attributes differ.'
+        if not node1.is_root_node():
+            diff_obj.attrs_is_diff = True
+            diff_obj.save()
+        return
+        # No need to go on if both elements are not of same kind
 
     if node1.element.text and node1.element.text.name != node2.element.text.name:
         print location + ' texts differ:'
