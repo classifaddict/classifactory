@@ -59,12 +59,13 @@
 			margin: 0 0 0 80px;
 			display: block;
 		}
-		ins {
+		ins, td.ins span, td.ins dl dd {
 			color: green;
 			text-decoration: none;
 		}
-		del {
+		del, td.del span, td.del dl dd {
 			color: red;
+			text-decoration: line-through;
 		}
 		/*table.fancytree-ext-table tbody tr td {
 			border: 0 none transparent;
@@ -105,6 +106,10 @@
 				$tdList.eq(1).html(node.data.attrs);
 				if (node.data.text) $tdList.eq(2).html(node.data.text);
 				if (node.data.textdiff) $tdList.eq(3).html(node.data.textdiff);
+				if (node.data.is_del_diff) {
+					$tdList.eq(0).addClass("del");
+					$tdList.eq(1).addClass("del");
+				}
 			},
 			click: function(event, data) {
 				// data.targetType is undefined when clicked column is not the main node one

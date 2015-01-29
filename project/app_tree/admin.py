@@ -61,7 +61,7 @@ admin.site.register(Text, TextAdmin)
 
 
 class DiffAdmin(admin.ModelAdmin):
-    list_display = ('treenode1', 'treenode2', 'elt_type_is_diff', 'texts_is_diff', 'attrs_is_diff', 'struct_is_diff')
+    list_display = ('treenode1', 'treenode2', 'is_type_diff', 'is_texts_diff', 'is_attrs_diff', 'is_del_diff', 'is_ins_diff')
 
 admin.site.register(Diff, DiffAdmin)
 

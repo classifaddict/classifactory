@@ -56,3 +56,4 @@ class ChildFancySerializer(KeySerializer):
     attrs = serializers.CharField(source='element.attributes_html')
     text = serializers.CharField(source='element.text.texts_html')
     textdiff = serializers.CharField()
+    is_del_diff = serializers.BooleanField()
