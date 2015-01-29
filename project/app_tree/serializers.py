@@ -53,7 +53,10 @@ class ChildFancySerializer(KeySerializer):
     children = RecursiveField(source='lazy_children', required=False, many=True)
 
     # Subsequent FancyTreeTable columns values
+
     attrs = serializers.CharField(source='element.attributes_html')
     text = serializers.CharField(source='element.text.texts_html')
-    textdiff = serializers.CharField()
-    is_del_diff = serializers.BooleanField()
+
+    text_diff = serializers.CharField()
+    attrs_diff = serializers.CharField()
+    diff_kind = serializers.CharField()

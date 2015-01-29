@@ -47,6 +47,16 @@ def diff(node1, node2, main_attr=''):
     except:
         diff_obj = Diff(treenode1=node1, treenode2=node2)
 
+    if diff_obj.is_del_diff:
+        print location + ' has been deleted.'
+        return
+        # No need to go on if node has been deleted
+
+    if diff_obj.is_ins_diff:
+        print location + ' has been inserted.'
+        return
+        # No need to go on if node has been inserted
+
     if elt_name != node2.element.type.name:
         print location + ' != ' + node2.element.type.name
         if not node1.is_root_node():
@@ -63,11 +73,6 @@ def diff(node1, node2, main_attr=''):
         return
         # No need to go on if both elements are not of same kind
 
-    if diff_obj.is_del_diff:
-        print location + ' has been deleted.'
-        return
-        # No need to go on if node has been deleted
-
     if node1.element.text and node1.element.text.name != node2.element.text.name:
         print location + ' texts differ:'
         print 'Text 1: ' + node1.element.text.contents
@@ -75,8 +80,8 @@ def diff(node1, node2, main_attr=''):
         diff_obj.is_texts_diff = True
         diff_obj.save()
 
-    if children_values(node1) != children_values(node2):
-        print location + ' children differ.'
+    # if children_values(node1) != children_values(node2):
+    #     print location + ' children differ.'
 
     nb1 = node1.get_children().count()
     nb2 = node2.get_children().count()
@@ -118,6 +123,7 @@ def diff(node1, node2, main_attr=''):
     i = 0
     imax = nb2 - nb1
     while nb2 > nb1:
+        # Try to insert shadow node(s) in 1st tree to obtain same size
         if i == imax: break
         i += 1
         for nodes in zip(node1.get_children(), node2.get_children()):
@@ -125,14 +131,29 @@ def diff(node1, node2, main_attr=''):
                 #TODO: something smarter for text node
                 continue
             if value(nodes[0]) != value(nodes[1]):
+                n = create_shadow(nodes[1], nodes[0].dataset)
+                n.insert_at(nodes[0], position='left', save=True)
                 diff_obj, c = Diff.objects.get_or_create(
-                    treenode1=nodes[0],
+                    treenode1=n,
                     treenode2=nodes[1]
                 )
-                if c:
-                    diff_obj.is_ins_diff = True
-                    diff_obj.save()
-                    nb1 += 1
+                diff_obj.is_ins_diff = True
+                diff_obj.save()
+                nb1 += 1
+                break
+
+    node2_last_child = node2.get_children().last()
+    while nb2 > nb1:
+        # Add shadow node(s) in 1st tree to obtain same size
+        n = create_shadow(node2_last_child, node1.dataset)
+        n.insert_at(node1, position='last-child', save=True)
+        diff_obj, c = Diff.objects.get_or_create(
+            treenode1=n,
+            treenode2=node2_last_child
+        )
+        diff_obj.is_ins_diff = True
+        diff_obj.save()
+        nb1 += 1
 
     for nodes in zip(node1.get_children(), node2.get_children()):
         diff(nodes[0], nodes[1], main_attr)

@@ -59,6 +59,10 @@
 			margin: 0 0 0 80px;
 			display: block;
 		}
+		td.mod span, td.mod dl dd {
+			color: orange;
+			text-decoration: none;
+		}
 		ins, td.ins span, td.ins dl dd {
 			color: green;
 			text-decoration: none;
@@ -103,12 +107,15 @@
 				var node = data.node;
 				$tdList = $(node.tr).find(">td");
 				$tdList.eq(0).addClass("symbol");
-				$tdList.eq(1).html(node.data.attrs);
-				if (node.data.text) $tdList.eq(2).html(node.data.text);
-				if (node.data.textdiff) $tdList.eq(3).html(node.data.textdiff);
-				if (node.data.is_del_diff) {
-					$tdList.eq(0).addClass("del");
-					$tdList.eq(1).addClass("del");
+
+				if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
+				else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
+
+				if (node.data.text_diff) $tdList.eq(2).html(node.data.text_diff);
+				else if (node.data.text) $tdList.eq(2).html(node.data.text);
+
+				if (node.data.diff_kind) {
+					$tdList.eq(0).addClass(node.data.diff_kind);
 				}
 			},
 			click: function(event, data) {
@@ -152,7 +159,7 @@
 		var node = tree.getNodeByKey(key.key);
 		node.setExpanded(true).done(function(){
 			if (path_keys.length==0) {
-				node.setTitle('<b style="color: red;">'+node.title+'</b>');
+				node.setTitle('<b style="font-weight: bold;text-decoration: underline;">'+node.title+'</b>');
 				node.setActive();
 				node.setFocus();
 				node.scrollIntoView();

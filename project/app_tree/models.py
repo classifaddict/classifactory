@@ -1,5 +1,6 @@
 from lxml.html.diff import htmldiff
 from django.db import models
+from django.db.models import Q
 from mptt.models import MPTTModel, TreeForeignKey
 
 
@@ -157,8 +158,7 @@ class TreeNode(MPTTModel):
             return False
         return True
 
-    #TODO: attr diff
-    def textdiff(self):
+    def text_diff(self):
         diffs = self.tree2_diffs.filter(is_texts_diff=True)
         if diffs.exists():
             diff = diffs.first()
@@ -168,11 +168,32 @@ class TreeNode(MPTTModel):
             )
         return None
 
-    def is_del_diff(self):
+    def attrs_diff(self):
+        diffs = self.tree2_diffs.filter(is_attrs_diff=True)
+        if diffs.exists():
+            diff = diffs.first()
+            return htmldiff(
+                diff.treenode1.element.attributes_html(),
+                diff.treenode2.element.attributes_html()
+            )
+        return None
+
+    def diff_kind(self):
+        diffs = self.tree2_diffs.filter(
+            Q(is_texts_diff=True) | Q(is_attrs_diff=True) | Q(is_type_diff=True)
+        )
+        if diffs.exists():
+            return 'mod'
+
         diffs = self.tree2_diffs.filter(is_del_diff=True)
         if diffs.exists():
-            return True
-        return False
+            return 'del'
+
+        diffs = self.tree2_diffs.filter(is_ins_diff=True)
+        if diffs.exists():
+            return 'ins'
+
+        return None
 
     def __unicode__(self):
         return self.element.type.name
