@@ -73,7 +73,7 @@ def store_element(elt, dataset, dt_conf, parent=None):
     if elt_type.is_mixed:
         # Serialize descendance as string, removing root element tags
         # and stripping normal and non-breaking spaces
-        contents = etree.tostring(elt).replace(
+        contents = etree.tostring(elt, encoding='unicode').replace(
             '<%s>' % elt.tag, ''
         ).replace(
             '</%s>' % elt.tag, ''
