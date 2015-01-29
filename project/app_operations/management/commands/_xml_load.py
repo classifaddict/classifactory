@@ -110,7 +110,7 @@ def store_element(elt, dataset, dt_conf, parent=None):
 
     if not elt_type.is_mixed:
         for child in elt:
-            if elt.tag not in dt_conf['remove_elts']:
+            if child.tag not in dt_conf['remove_elts']:
                 store_element(child, dataset, dt_conf, parent=treenode)
 
 
