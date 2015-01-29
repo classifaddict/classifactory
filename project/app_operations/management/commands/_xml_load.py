@@ -82,7 +82,7 @@ def store_element(elt, dataset, dt_conf, parent=None):
         # Get or create text object
         text, c = Text.objects.get_or_create(
             doctype=dataset.doctype,
-            name=md5(contents).hexdigest(),
+            name=md5(contents.encode('utf-8')).hexdigest(),
             contents=contents
         )
 
