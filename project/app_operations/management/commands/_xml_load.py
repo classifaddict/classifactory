@@ -87,14 +87,23 @@ def store_element(elt, dataset, dt_conf, parent=None):
         )
 
     # If element exists then use it or create a new one
+    attrs_key = ''
+    main_attrs = ''
+    if attrs:
+        attrs_key = md5(''.join(
+            [a.type.name + a.value for a in attrs]
+        )).hexdigest()
+        main_attrs = md5(''.join(
+            [a.type.name + a.value for a in attrs if a.type.name in dt_conf[
+                'main_attrs'
+            ]]
+        )).hexdigest()
+
     e, created = Element.objects.get_or_create(
         type=elt_type,
         text=text,
-        attrs_key=md5(''.join([
-            a.type.name + a.value for a in attrs])).hexdigest(),
-        main_attrs=md5(''.join([
-            a.type.name + a.value for a in attrs if a.type.name in dt_conf['main_attrs']
-        ])).hexdigest()
+        attrs_key=attrs_key,
+        main_attrs=main_attrs
     )
 
     if created:

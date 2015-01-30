@@ -104,8 +104,8 @@ class Text(models.Model):
 class Element(models.Model):
     type = models.ForeignKey('ElementType', related_name='element_instances')
     text = models.ForeignKey('Text', null=True, blank=True)
-    attrs_key = models.CharField(max_length=32)
-    main_attrs = models.CharField(max_length=32)
+    attrs_key = models.CharField(max_length=32, blank=True)
+    main_attrs = models.CharField(max_length=32, blank=True)
     attributes = models.ManyToManyField('Attribute', null=True, blank=True)
 
     def attributes_html(self):
