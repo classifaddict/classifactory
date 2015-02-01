@@ -135,6 +135,7 @@ class Diff(models.Model):
     class Meta:
         unique_together = ('treenode1', 'treenode2')
         index_together = [['treenode1', 'treenode2']]
+        ordering = ['treenode2']
 
 
 class TreeNode(MPTTModel):
