@@ -25,7 +25,7 @@ doctypes_conf = {
 
 
 class XMLTreeLoader:
-    def __init__(self, doctype_name, dataset_version, file_extension):
+    def __init__(self, doctype_name, dataset_version, store, file_extension):
         self.dt_conf = doctypes_conf[doctype_name]
 
         dt_conf = doctypes_conf[doctype_name]
@@ -67,7 +67,10 @@ class XMLTreeLoader:
         print 'Cleaning up...'
         self.cleanup()
         print 'Store elements, attributes and texts...'
-        self.store_treeleaves_and_types()
+        if store == 'types':
+            self.store_treeleaves_and_types()
+        else:
+            self.store_treeleaves()
         print 'Store treenodes...'
         self.store_treenode(self.root)
 
@@ -107,7 +110,7 @@ class XMLTreeLoader:
     def store_elements(self, new_elts_values):
         elt_types = self.get_elt_types()
         texts_ids = self.get_texts()
-        attrs_ids = self.get_attrs()
+        attrs_objs = self.get_attrs()
 
         new_elts = []
         for name, text_name, attrs_key, attrs in new_elts_values:
@@ -127,7 +130,7 @@ class XMLTreeLoader:
 
         for name, text_name, attrs_key, attrs in new_elts_values:
             e = self.elts[(name, text_name, attrs_key)]
-            e.attributes = [attrs_ids[a] for a in attrs]
+            e.attributes = [attrs_objs[a] for a in attrs]
             e.save()
 
     def create_text_object(self, e, new_texts):
@@ -171,8 +174,8 @@ class XMLTreeLoader:
 
         self.elt_values.add(values)
 
-        # Store element keys in ElementTree node
-        # so that element object that will be created
+        # Store element keys in ElementTree node so that element object
+        # that will be created can be retrieved when building tree
         e.set('eltkey4node', '_'.join(values))
 
     def store_treeleaves(self):
@@ -289,5 +292,5 @@ class XMLTreeLoader:
                 self.store_treenode(elt=child, parent=treenode)
 
 
-def load(doctype_name, dataset_version, file_extension='xml'):
-    xml = XMLTreeLoader(doctype_name, dataset_version, file_extension)
+def load(doctype_name, dataset_version, store=None, file_extension='xml'):
+    xml = XMLTreeLoader(doctype_name, dataset_version, store, file_extension)
