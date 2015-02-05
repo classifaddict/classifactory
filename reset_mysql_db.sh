@@ -16,9 +16,11 @@ DROP TABLE IF EXISTS app_tree_treenode;
 SET FOREIGN_KEY_CHECKS = 1;
 EOF
 ./venv/bin/python project/manage.py syncdb
-echo 'Loading ipc_scheme 20140101...'
-./venv/bin/python project/manage.py load_xml ipc_scheme 20140101
 echo 'Loading ipc_scheme 20150101...'
 ./venv/bin/python project/manage.py load_xml ipc_scheme 20150101
+echo
+echo 'Loading ipc_scheme 20140101...'
+./venv/bin/python project/manage.py load_xml ipc_scheme 20140101
+echo
 echo 'Diffing ipc_scheme 20140101 and 20150101...'
 ./venv/bin/python project/manage.py diff_trees ipc_scheme 20140101 20150101
