@@ -17,7 +17,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 EOF
 ./venv/bin/python project/manage.py syncdb
 echo 'Loading ipc_scheme 20150101...'
-./venv/bin/python project/manage.py load_xml ipc_scheme 20150101
+./venv/bin/python project/manage.py load_xml ipc_scheme 20150101 types
 echo
 echo 'Loading ipc_scheme 20140101...'
 ./venv/bin/python project/manage.py load_xml ipc_scheme 20140101
