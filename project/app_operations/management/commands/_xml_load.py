@@ -279,13 +279,13 @@ class XMLTreeLoader:
 
     def store_treeleaves_and_types(self):
         attr_names = set(
-            [a.name for a in AttributeType.objects.filter(doctype=self.doctype)]
+            [a['name'] for a in AttributeType.objects.filter(doctype=self.doctype).order_by().values('name')]
         )
-        new_attr_values = []
+        new_attr_values = set()
         new_attr_types = []
 
         elt_names = set(
-            [e.name for e in ElementType.objects.filter(doctype=self.doctype)]
+            [e['name'] for e in ElementType.objects.filter(doctype=self.doctype).order_by().values('name')]
         )
         new_elt_types = []
         new_elt_types_attrs = {}
@@ -319,7 +319,7 @@ class XMLTreeLoader:
                     continue
 
                 self.attr_values.add((name, value))
-                new_attr_values.append((name, value))
+                new_attr_values.add((name, value))
 
                 if name in attr_names:
                     continue
