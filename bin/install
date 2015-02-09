@@ -19,7 +19,7 @@ yum -y install gcc libxml2-devel libxslt-devel \
 echo "Creating mysql database"
 mysql -u root -p <<EOF
 DROP DATABASE IF EXISTS tree;
-CREATE DATABASE tree CHARSET utf8 COLLATE utf8_unicode_ci;
+CREATE DATABASE tree CHARSET utf8 COLLATE utf8_bin;
 GRANT ALL PRIVILEGES ON tree.* to 'tree'@'localhost' IDENTIFIED BY 'tree';
 EOF
 
