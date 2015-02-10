@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rest_framework.renderers import JSONRenderer
 
 from models import TreeNode
-from serializers import ElementSerializer, ChildFancySerializer, KeySerializer
+from serializers import ElementSerializer, ChildFancySerializer, KeySerializer, PaginatedKeySerializer
 
 
 def home(request):
@@ -124,3 +125,28 @@ def element_fancy_search(request, query):
             return JSONResponse(serializer.data)
         else:
             return HttpResponse(status=404)
+
+
+def diffs(request, dataset_name):
+    queryset = TreeNode.objects.select_related(
+        'dataset', 'tree2_diffs'
+    ).filter(
+        dataset__name=dataset_name,
+        tree2_diffs__isnull=False
+    )
+
+    paginator = Paginator(queryset, 5)
+    page = request.GET.get('page')
+    try:
+        diffs = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        diffs = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999),
+        # deliver last page of results.
+        diffs = paginator.page(paginator.num_pages)
+
+    serializer = PaginatedKeySerializer(diffs)
+
+    return JSONResponse(serializer.data)

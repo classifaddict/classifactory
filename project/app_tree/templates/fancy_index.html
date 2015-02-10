@@ -151,7 +151,36 @@
 			}
 		});
 
+		get_diff_page("{% url 'home' %}diffs/20150101/");
+
 	});
+
+	function insert_diff_pg_button(direction, icon) {
+			if (direction) {
+				var pg_url = "{% url 'home' %}diffs/20150101/"+direction;
+				$("#diffs").append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_diff_page(\''+pg_url+'\');">'+icon+';</a>');
+			}
+	}
+
+	function get_diff_page(url) {
+		$.getJSON(url, function(data) {
+			$("#diffs").empty();
+			$("#diffs").append('&nbsp;Navigate differences: ')
+			insert_diff_pg_button(data.previous, '&lt');
+			$.each(data.results, function(key, diff) {
+				var hit = parseInt(key) + 1;
+			    $("#diffs").append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach_diff('+diff.key+');">' + hit + '</a>]');
+			});
+			insert_diff_pg_button(data.next, '&gt');
+		});
+	}
+
+	function reach_diff(diff) {
+		$.getJSON("{% url 'home' %}ancestors/" + diff + "/", function(data) {
+			var tree = $("#tree").fancytree("getTree");
+			reach_node(tree, data);
+		});
+	}
 
 	function reach_node(tree, path_keys) {
 		var key = path_keys.pop();
@@ -175,6 +204,7 @@
 		<input type="text" name="query" size="100">
 		<input type="submit" value="Search">
 	</form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
+	<span id="diffs"></span>
 	</div>
 	<table id="tree" width="100%">
 		<colgroup>
