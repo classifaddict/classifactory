@@ -39,17 +39,15 @@ class XMLTreeLoader:
     def __init__(self, doctype_name, dataset_version, store, file_extension):
         self.dt_conf = doctypes_conf[doctype_name]
 
-        dt_conf = doctypes_conf[doctype_name]
-
         parser = etree.XMLParser(remove_blank_text=True)
 
-        file_basename = dt_conf['file_basename'].substitute(
+        file_basename = self.dt_conf['file_basename'].substitute(
             version=dataset_version
         )
 
         path_basename = os.path.join(
             settings.DATA_DIR,
-            dt_conf['data_path'].substitute(version=dataset_version),
+            self.dt_conf['data_path'].substitute(version=dataset_version),
             file_basename
         )
 
@@ -72,7 +70,8 @@ class XMLTreeLoader:
         self.attr_values = set([(
             a['type__name'], a['value']
         ) for a in Attribute.objects.select_related('attributetype').filter(
-            type__doctype=self.doctype).order_by().values(
+            type__doctype=self.doctype
+        ).order_by().values(
             'type__name', 'value'
         )])
 
@@ -103,7 +102,9 @@ class XMLTreeLoader:
         self.store_treenode(self.root)
 
     def get_attr_types(self):
-        return dict([(a['name'], a['id']) for a in AttributeType.objects.filter(
+        return dict([(
+            a['name'], a['id']
+        ) for a in AttributeType.objects.filter(
             doctype=self.doctype
         ).order_by().values('id', 'name')])
 
@@ -282,15 +283,21 @@ class XMLTreeLoader:
         through_model.objects.bulk_create(attrs_sets)
 
     def store_treeleaves_and_types(self):
-        attr_names = set(
-            [a['name'] for a in AttributeType.objects.filter(doctype=self.doctype).order_by().values('name')]
-        )
+        attr_names = set([
+            a['name'] for a in AttributeType.objects.filter(
+                doctype=self.doctype
+            ).order_by().values('name')
+        ])
+
         new_attr_values = set()
         new_attr_types = []
 
-        elt_names = set(
-            [e['name'] for e in ElementType.objects.filter(doctype=self.doctype).order_by().values('name')]
-        )
+        elt_names = set([
+            e['name'] for e in ElementType.objects.filter(
+                doctype=self.doctype
+            ).order_by().values('name')
+        ])
+
         new_elt_types = []
         new_elt_types_attrs = {}
 
