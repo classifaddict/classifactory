@@ -55,7 +55,9 @@ def element_fancy_roots(request):
     """
 
     if request.method == 'GET':
-        treenode = TreeNode.objects.root_nodes()
+        treenode = TreeNode.objects.root_nodes().select_related('element').prefetch_related(
+            'element__attributes'
+        )
         serializer = ChildFancySerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
@@ -67,7 +69,9 @@ def element_fancy_children(request, pk):
     """
 
     if request.method == 'GET':
-        treenode = TreeNode.objects.filter(parent=pk)
+        treenode = TreeNode.objects.select_related('element').prefetch_related(
+            'element__attributes'
+        ).filter(parent=pk)
         serializer = ChildFancySerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
@@ -79,7 +83,7 @@ def element_fancy_ancestors(request, pk):
     """
 
     if request.method == 'GET':
-        treenode = TreeNode.objects.get(pk=pk)
+        treenode = TreeNode.objects.only('id').get(pk=pk)
 
         # Lazy ancestors (the ones for which element__type__is_main)
         # only are returned
@@ -99,7 +103,7 @@ def element_fancy_search(request, query):
     """
 
     if request.method == 'GET':
-        r = TreeNode.objects.all()
+        r = TreeNode.objects.only('id')
         for param in query.split():
             p = param.split('=')
             r = r.filter(

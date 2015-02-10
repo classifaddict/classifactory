@@ -71,7 +71,7 @@ class XMLTreeLoader:
 
         self.attr_values = set([(
             a['type__name'], a['value']
-        ) for a in Attribute.objects.filter(
+        ) for a in Attribute.objects.select_related('attributetype').filter(
             type__doctype=self.doctype).order_by().values(
             'type__name', 'value'
         )])
@@ -82,7 +82,9 @@ class XMLTreeLoader:
 
         self.elt_values = set([(
             e['type__name'], e['text__name'], e['attrs_key']
-        ) for e in Element.objects.filter(type__doctype=self.doctype).values(
+        ) for e in Element.objects.select_related(
+            'elementtype', 'text'
+        ).filter(type__doctype=self.doctype).values(
             'type__name', 'text__name', 'attrs_key'
         )])
 
@@ -108,7 +110,7 @@ class XMLTreeLoader:
     def get_attrs(self):
         return dict([(
             (a['type__name'], a['value']), a['id']
-        ) for a in Attribute.objects.filter(
+        ) for a in Attribute.objects.select_related('attributetype').filter(
             type__doctype=self.doctype
         ).order_by().values(
             'id', 'type__name', 'value'
@@ -122,7 +124,9 @@ class XMLTreeLoader:
     def get_elts(self):
         return dict([(
             (e['type__name'], e['text__name'], e['attrs_key']), e['id']
-        ) for e in Element.objects.filter(type__doctype=self.doctype).values(
+        ) for e in Element.objects.select_related(
+            'elementtype', 'text'
+        ).filter(type__doctype=self.doctype).values(
             'id', 'type__name', 'text__name', 'attrs_key'
         )])
 

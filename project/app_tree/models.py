@@ -145,9 +145,16 @@ class TreeNode(MPTTModel):
     is_diff_only = models.BooleanField(default=False)
 
     def lazy_children(self):
+        children = self.get_children().select_related(
+            'element'
+        ).prefetch_related(
+            'element__attributes'
+        )
         if not self.element.type.is_main or self.is_root_node():
-            return self.get_children()
-        return self.get_children().exclude(parent__element__type=self.element.type)
+            # Return all children because current node is not lazy
+            return children
+        # Return children which element type is different than parent one
+        return children.exclude(parent__element__type=self.element.type)
 
     def is_container(self):
         if self.is_leaf_node():
