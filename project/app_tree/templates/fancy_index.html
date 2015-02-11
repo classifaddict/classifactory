@@ -128,10 +128,8 @@
 
 		$("#search").submit(function(event) {
 			var query = $("input").val();
-			$.getJSON("{% url 'home' %}search/" + query + "/", function(data) {
-				var tree = $("#tree").fancytree("getTree");
-				reach_node(tree, data);
-			});
+			var url = "{% url 'home' %}search/"+query+'/';
+			get_pagination("Results", url, "");
 			event.preventDefault();
 		});
 
@@ -151,48 +149,61 @@
 			}
 		});
 
-		get_diff_page("{% url 'home' %}diffs/20150101/");
+		get_pagination("Differences", "{% url 'home' %}diffs/20150101/", "");
 
 	});
 
-	function insert_diff_pg_button(direction, icon) {
-			if (direction) {
-				var pg_url = "{% url 'home' %}diffs/20150101/"+direction;
-				$("#diffs").append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_diff_page(\''+pg_url+'\');">'+icon+';</a>');
-			}
+	function insert_pg_button(target, base_url, page, icon) {
+		if (page) {
+			var params = "'"+target+"', '"+base_url+"', '"+page+"'";
+			$("#"+target).append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_pagination('+params+');">'+icon+';</a>');
+		}
 	}
 
-	function get_diff_page(url) {
-		$.getJSON(url, function(data) {
-			$("#diffs").empty();
-			$("#diffs").append('&nbsp;Navigate differences: ')
-			insert_diff_pg_button(data.previous, '&lt');
-			$.each(data.results, function(key, diff) {
-				var hit = parseInt(key) + 1;
-			    $("#diffs").append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach_diff('+diff.key+');">' + hit + '</a>]');
+	function get_pagination(target, base_url, page) {
+		$.getJSON(base_url+page, function(data) {
+			$("#"+target).empty();
+			$("#"+target).append('&nbsp;'+target+': ')
+			insert_pg_button(target, base_url, data.previous, '&lt');
+			var pg_len = 5;
+			var x = 0;
+			if (data.previous) x = parseInt(data.previous.substr(6))
+			$.each(data.results, function(key, result) {
+				var hit = parseInt(key) + 1 + x * pg_len;
+			    $("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
 			});
-			insert_diff_pg_button(data.next, '&gt');
+			insert_pg_button(target, base_url, data.next, '&gt');
 		});
 	}
 
-	function reach_diff(diff) {
-		$.getJSON("{% url 'home' %}ancestors/" + diff + "/", function(data) {
+	function reach(node) {
+		$.getJSON("{% url 'home' %}ancestors/" + node + "/", function(data) {
 			var tree = $("#tree").fancytree("getTree");
-			reach_node(tree, data);
+			reach_node(tree, data, node);
 		});
 	}
 
-	function reach_node(tree, path_keys) {
+	function select_node(node) {
+		node.setTitle('<b style="font-weight: bold;text-decoration: underline;">'+node.title+'</b>');
+		node.setActive();
+		node.setFocus();
+		node.scrollIntoView();
+	}
+
+	function reach_node(tree, path_keys, target) {
 		var key = path_keys.pop();
 		var node = tree.getNodeByKey(key.key);
 		node.setExpanded(true).done(function(){
 			if (path_keys.length==0) {
-				node.setTitle('<b style="font-weight: bold;text-decoration: underline;">'+node.title+'</b>');
-				node.setActive();
-				node.setFocus();
-				node.scrollIntoView();
+				if (node.key == target) {
+					select_node(node);
+				} else {
+					node.visit(function(childNode) {
+	                    if (childNode.key == target) select_node(childNode);
+	                });
+	            }
 			} else {
-				reach_node(tree, path_keys);
+				reach_node(tree, path_keys, target);
 			}
 		});
 	}
@@ -202,9 +213,9 @@
 	<div id="top">
 	<form id="search">
 		<input type="text" name="query" size="100">
-		<input type="submit" value="Search">
+		<input type="submit" value="Search"><span id="Results"></span>
 	</form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
-	<span id="diffs"></span>
+	<span id="Differences"></span>
 	</div>
 	<table id="tree" width="100%">
 		<colgroup>
