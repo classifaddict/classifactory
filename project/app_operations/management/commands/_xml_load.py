@@ -10,6 +10,8 @@ from django.conf import settings
 from app_tree.models import Doctype, ElementType, AttributeType
 from app_tree.models import Dataset, Element, Attribute, Text, TreeNode
 
+from app_operations.decorators import with_connection_usable
+
 
 def log(msg):
     print '(%s) %s' % (time.strftime('%H:%M:%S'), msg)
@@ -17,7 +19,7 @@ def log(msg):
 doctypes_conf = {
     'ipc_scheme': {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
-        'file_basename': Template('ipcr_scheme_$version'),
+        'file_basename': Template('ipcr_scheme_$version$release'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'remove_elts': ['fr'],
         'main_attrs': ['symbol', 'kind'],
@@ -31,18 +33,42 @@ doctypes_conf = {
             'title', 'noteParagraph', 'text', 'references', 'subnote', 'orphan',
             'indexEntry', 'titlePart', 'entryReference'
         ]
+    },
+    'nice_indications': {
+        'data_path': Template('ITOS/NICE/data/$version/indications'),
+        'file_basename': Template('$version-en-indications-$release'),
+        'main_elts': ['nice:Indications', 'nice:GoodOrService'],
+        'remove_elts': [],
+        'main_attrs': ['basicNumber', 'dateInForce'],
+        'skip_attrs': [],
+        'remove_attrs': ['xsi:schemaLocation'],
+        'remove_attrs_val': [],
+        'mixed_elts': [
+            'nice:Label', 'nice:SortExpression',
+            'nice:AlternateSortExpression'
+        ],
+        'container_elts': [
+            'nice:Indications', 'nice:GoodOrService', 'nice:Indication',
+            'nice:SynonymIndication', 'nice:Label',
+            'nice:SortExpression', 'nice:AlternateSortExpression'
+        ]
     }
 }
 
 
 class XMLTreeLoader:
-    def __init__(self, doctype_name, dataset_version, store, file_extension):
+    def __init__(self, doctype_name, dataset_version, file_release, no_types, xml):
         self.dt_conf = doctypes_conf[doctype_name]
 
-        parser = etree.XMLParser(remove_blank_text=True)
+        parser = etree.XMLParser(
+            remove_blank_text=True,
+            ns_clean=True,
+            remove_comments=True
+        )
 
         file_basename = self.dt_conf['file_basename'].substitute(
-            version=dataset_version
+            version=dataset_version,
+            release=file_release
         )
 
         path_basename = os.path.join(
@@ -51,14 +77,22 @@ class XMLTreeLoader:
             file_basename
         )
 
-        if file_extension == 'zip':
-            zip_file = zipfile.ZipFile(path_basename + '.' + file_extension)
-            file_obj = zip_file.open(file_basename + '.xml')
+        if xml:
+            file_obj = open(path_basename + '.xml')
         else:
-            file_obj = open(path_basename + '.' + file_extension)
+            zip_file = zipfile.ZipFile(path_basename + '.zip')
+            file_obj = zip_file.open(file_basename + '.xml')
 
         tree = etree.parse(file_obj, parser)
         self.root = tree.getroot()
+
+        # Get namespace(s) info
+        self.NSMAP = self.root.nsmap
+        self.NSpfx = ''
+        self.NS = ''
+        if self.root.prefix is not None:
+            self.NSpfx = self.root.prefix + ":"
+            self.NS = "{%s}" % self.NSMAP[self.root.prefix]
 
         self.doctype, c = Doctype.objects.get_or_create(name=doctype_name)
 
@@ -93,13 +127,22 @@ class XMLTreeLoader:
         self.cleanup()
 
         log('Storing elements, attributes and texts...')
-        if store == 'types':
-            self.store_treeleaves_and_types()
-        else:
+        if no_types:
             self.store_treeleaves()
+        else:
+            self.store_treeleaves_and_types()
 
         log('Storing treenodes...')
         self.store_treenode(self.root)
+
+    def tag(self, tagname):
+        # Replaces URI prefix by local prefix within qualified tag name
+        # e.g. {uri}tag => pfx:tag
+        return tagname.replace(self.NS, self.NSpfx)
+
+    def tags(self, tagname_list):
+        # Replaces local prefix by URI prefix within qualified tag names list
+        return [n.replace(self.NSpfx, self.NS) for n in tagname_list]
 
     def get_attr_types(self):
         return dict([(
@@ -138,13 +181,22 @@ class XMLTreeLoader:
 
     def cleanup(self):
         for r in self.dt_conf['remove_elts']:
-            for e in self.root.xpath('//' + r):
+            n = r.split(':')
+            name = n[-1]
+            for e in self.root.xpath('//*[local-name() = "%s"]' % name):
                 e.getparent().remove(e)
 
         for r in self.dt_conf['remove_attrs']:
-            for e in self.root.xpath('//*[@%s]' % r):
-                a = e.attrib.pop(r)
+            n = r.split(':')
+            name = n[-1]
+            qname = n[0]
+            if len(n) > 1:
+                qname = '{%s}%s' % (self.NSMAP[n[0]], n[1])
 
+            for e in self.root.xpath('//*[@*[local-name() = "%s"]]' % name):
+                e.attrib.pop(qname)
+
+    @with_connection_usable
     def store_attributes(self, new_attrs_values):
         log('Storing attributes...')
         attr_types = self.get_attr_types()
@@ -155,6 +207,7 @@ class XMLTreeLoader:
             ) for name, value in new_attrs_values
         ])
 
+    @with_connection_usable
     def store_elements(self, new_elts_values):
         log('Storing elements...')
         elt_types = self.get_elt_types()
@@ -193,16 +246,19 @@ class XMLTreeLoader:
                 )
         through_model.objects.bulk_create(attrs_sets)
 
-    def create_text_object(self, e, new_texts):
-        if e.tag not in self.dt_conf['mixed_elts']:
+    def create_text_object(self, e, tag, new_texts):
+        if tag not in self.dt_conf['mixed_elts']:
             contents = ''
         else:
             # Serialize descendance as string, removing root element tags
             # and stripping normal and non-breaking spaces
-            contents = etree.tostring(e, encoding='unicode').replace(
-                '<%s>' % e.tag, ''
+            contents = etree.tostring(e, with_tail=False, encoding='unicode')
+            for k, v in e.nsmap.iteritems():
+                contents = contents.replace(' xmlns:%s="%s"' % (k, v), '')
+            contents = contents.replace(
+                '<%s>' % tag, ''
             ).replace(
-                '</%s>' % e.tag, ''
+                '</%s>' % tag, ''
             ).strip(u'\xA0 ')
 
         text_name = md5(contents.encode('utf-8')).hexdigest()
@@ -220,14 +276,14 @@ class XMLTreeLoader:
         ))
         return text_name
 
-    def collect_elt_values(self, e, text_name, attrs, new_elts_values):
+    def collect_elt_values(self, e, tag, text_name, attrs, new_elts_values):
         attrs_key = ''
         if attrs:
             attrs_key = md5(
                 ''.join([name + value for name, value in attrs])
             ).hexdigest()
 
-        values = (e.tag, text_name, attrs_key)
+        values = (tag, text_name, attrs_key)
 
         if values not in self.elt_values:
             new_elts_values.append(values + (attrs,))
@@ -238,14 +294,16 @@ class XMLTreeLoader:
         # that will be created can be retrieved when building tree
         e.set('eltkey4node', '_'.join(values))
 
+    @with_connection_usable
     def store_treeleaves(self):
         new_attr_values = []
         new_texts = []
         new_elts_values = []
 
-        for e in self.root.iter(self.dt_conf['container_elts']):
+        for e in self.root.iter(self.tags(self.dt_conf['container_elts'])):
+            tag = self.tag(e.tag)
 
-            text_name = self.create_text_object(e, new_texts)
+            text_name = self.create_text_object(e, tag, new_texts)
 
             attrs = [(k, e.get(k)) for k in sorted(e.keys()) if e.get(k)]
             for a in attrs:
@@ -254,7 +312,7 @@ class XMLTreeLoader:
                 new_attr_values.append(a)
                 self.attr_values.add(a)
 
-            self.collect_elt_values(e, text_name, attrs, new_elts_values)
+            self.collect_elt_values(e, tag, text_name, attrs, new_elts_values)
 
         self.store_attributes(new_attr_values)
 
@@ -263,6 +321,7 @@ class XMLTreeLoader:
 
         self.store_elements(new_elts_values)
 
+    @with_connection_usable
     def store_element_types(self, new_elt_types, new_elt_types_attrs):
         ElementType.objects.bulk_create(new_elt_types)
 
@@ -282,6 +341,7 @@ class XMLTreeLoader:
                 )
         through_model.objects.bulk_create(attrs_sets)
 
+    @with_connection_usable
     def store_treeleaves_and_types(self):
         attr_names = set([
             a['name'] for a in AttributeType.objects.filter(
@@ -304,27 +364,28 @@ class XMLTreeLoader:
         new_texts = []
         new_elts_values = []
 
-        for e in self.root.iter(self.dt_conf['container_elts']):
+        for e in self.root.iter(self.tags(self.dt_conf['container_elts'])):
+            tag = self.tag(e.tag)
 
             # Create text object
-            text_name = self.create_text_object(e, new_texts)
+            text_name = self.create_text_object(e, tag, new_texts)
 
-            if e.tag not in elt_names:
+            if tag not in elt_names:
                 # Create element type object
                 new_elt_types.append(ElementType(
                     doctype=self.doctype,
-                    name=e.tag,
-                    is_mixed=e.tag in self.dt_conf['mixed_elts'],
-                    is_main=e.tag in self.dt_conf['main_elts']
+                    name=tag,
+                    is_mixed=tag in self.dt_conf['mixed_elts'],
+                    is_main=tag in self.dt_conf['main_elts']
                 ))
-                elt_names.add(e.tag)
+                elt_names.add(tag)
 
-            if e.tag not in new_elt_types_attrs:
-                new_elt_types_attrs[e.tag] = set()
+            if tag not in new_elt_types_attrs:
+                new_elt_types_attrs[tag] = set()
 
             attrs = [(k, e.get(k)) for k in sorted(e.keys()) if e.get(k)]
             for name, value in attrs:
-                new_elt_types_attrs[e.tag].add(name)
+                new_elt_types_attrs[tag].add(name)
 
                 if (name, value) in self.attr_values:
                     continue
@@ -344,7 +405,7 @@ class XMLTreeLoader:
                 ))
                 attr_names.add(name)
 
-            self.collect_elt_values(e, text_name, attrs, new_elts_values)
+            self.collect_elt_values(e, tag, text_name, attrs, new_elts_values)
 
         # Store attribute types
         AttributeType.objects.bulk_create(new_attr_types)
@@ -358,6 +419,7 @@ class XMLTreeLoader:
 
         self.store_elements(new_elts_values)
 
+    @with_connection_usable
     def store_treenode(self, elt, parent=None):
         # Attach retrieved leaf element to a new treenode
         # Leaf element is retrieved by keys collected during leaves storage
@@ -368,10 +430,10 @@ class XMLTreeLoader:
         )
 
         # Process children nodes
-        if elt.tag not in self.dt_conf['mixed_elts']:
+        if self.tag(elt.tag) not in self.dt_conf['mixed_elts']:
             for child in elt:
                 self.store_treenode(elt=child, parent=treenode)
 
 
-def load(doctype_name, dataset_version, store=None, file_extension='xml'):
-    XMLTreeLoader(doctype_name, dataset_version, store, file_extension)
+def load(doctype_name, dataset_version, file_release='', no_types=False, xml=False):
+    XMLTreeLoader(doctype_name, dataset_version, file_release, no_types, xml)
