@@ -106,8 +106,8 @@ def element_fancy_search(request, query):
     queryset = TreeNode.objects.only('id')
 
     for param in query.split():
-        if ':' in param:
-            p = param.split(':')
+        if '!' in param:
+            p = param.split('!')
             if len(p) > 2:
                 break
             queryset = queryset.filter(
