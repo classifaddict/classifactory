@@ -150,7 +150,7 @@ class TreeNode(MPTTModel):
         ).prefetch_related(
             'element__attributes'
         )
-        if not self.element.type.is_main or self.is_root_node():
+        if not self.element.type.is_main:
             # Return all children because current node is not lazy
             return children
         # Return children which element type is different than parent one
