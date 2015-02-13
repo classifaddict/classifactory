@@ -19,7 +19,8 @@ def log(msg):
 doctypes_conf = {
     'ipc_scheme': {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
-        'file_basename': Template('ipcr_scheme_$version$release'),
+        'zip_name': Template('ipcr_scheme_$version$release.zip'),
+        'xml_name': Template('ipcr_scheme_$version$release.xml'),
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'remove_elts': ['fr'],
         'main_attrs': ['symbol', 'kind'],
@@ -36,7 +37,8 @@ doctypes_conf = {
     },
     'nice_indications': {
         'data_path': Template('ITOS/NICE/data/$version/indications'),
-        'file_basename': Template('$version-en-indications-$release'),
+        'zip_name': Template('$version-indications-$release.zip'),
+        'xml_name': Template('$version-$lang-indications-$release.xml'),
         'main_elts': ['nice:Indications', 'nice:GoodOrService'],
         'remove_elts': [],
         'main_attrs': ['basicNumber', 'dateInForce'],
@@ -55,7 +57,8 @@ doctypes_conf = {
     },
     'nice_classes': {
         'data_path': Template('ITOS/NICE/data/$version/class_headings_and_explanatory_notes'),
-        'file_basename': Template('$version-en-class_headings_and_explanatory_notes-$release'),
+        'zip_name': Template('$version-class_headings_and_explanatory_notes-$release.zip'),
+        'xml_name': Template('$version-$lang-class_headings_and_explanatory_notes-$release.xml'),
         'main_elts': ['nice:ClassHeadingsExplanatoryNotes', 'nice:Class'],
         'remove_elts': [],
         'main_attrs': ['classNumber', 'dateInForce'],
@@ -77,31 +80,35 @@ doctypes_conf = {
 
 
 class XMLTreeLoader:
-    def __init__(self, doctype_name, dataset_version, file_release, no_types, xml):
+    def __init__(self, doctype_name, dataset_version, lang, file_release, no_types, xml):
         self.dt_conf = doctypes_conf[doctype_name]
+
+        data_path = os.path.join(
+            settings.DATA_DIR,
+            self.dt_conf['data_path'].substitute(version=dataset_version)
+        )
+
+        xml_name = self.dt_conf['xml_name'].substitute(
+            version=dataset_version,
+            lang=lang,
+            release=file_release
+        )
+
+        if xml:
+            file_obj = open(os.path.join(data_path, xml_name))
+        else:
+            zip_name = self.dt_conf['zip_name'].substitute(
+                version=dataset_version,
+                release=file_release
+            )
+            zip_file = zipfile.ZipFile(os.path.join(data_path, zip_name))
+            file_obj = zip_file.open(xml_name)
 
         parser = etree.XMLParser(
             remove_blank_text=True,
             ns_clean=True,
             remove_comments=True
         )
-
-        file_basename = self.dt_conf['file_basename'].substitute(
-            version=dataset_version,
-            release=file_release
-        )
-
-        path_basename = os.path.join(
-            settings.DATA_DIR,
-            self.dt_conf['data_path'].substitute(version=dataset_version),
-            file_basename
-        )
-
-        if xml:
-            file_obj = open(path_basename + '.xml')
-        else:
-            zip_file = zipfile.ZipFile(path_basename + '.zip')
-            file_obj = zip_file.open(file_basename + '.xml')
 
         tree = etree.parse(file_obj, parser)
         self.root = tree.getroot()
@@ -455,5 +462,5 @@ class XMLTreeLoader:
                 self.store_treenode(elt=child, parent=treenode)
 
 
-def load(doctype_name, dataset_version, file_release='', no_types=False, xml=False):
-    XMLTreeLoader(doctype_name, dataset_version, file_release, no_types, xml)
+def load(doctype_name, dataset_version, lang='en', file_release='', no_types=False, xml=False):
+    XMLTreeLoader(doctype_name, dataset_version, lang, file_release, no_types, xml)

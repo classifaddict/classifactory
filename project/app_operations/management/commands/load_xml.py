@@ -5,7 +5,7 @@ from _xml_load import load
 
 class Command(BaseCommand):
     help = 'Load an XML File'
-    args = '<doctype_name dataset_version [file_release] ...>'
+    args = '<doctype_name dataset_version lang [file_release] ...>'
 
     option_list = BaseCommand.option_list + (
         make_option(
@@ -27,10 +27,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         doctype_name = args[0]
         dataset_version = args[1]
+        lang = args[2]
+
         file_release = ''
-        if len(args) == 3:
-            file_release = args[2]
+        if len(args) == 4:
+            file_release = args[3]
+
         load(
-            doctype_name, dataset_version, file_release,
+            doctype_name, dataset_version, lang, file_release,
             no_types=options['no_types'], xml=options['xml']
         )
