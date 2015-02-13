@@ -52,6 +52,26 @@ doctypes_conf = {
             'nice:SynonymIndication', 'nice:Label',
             'nice:SortExpression', 'nice:AlternateSortExpression'
         ]
+    },
+    'nice_classes': {
+        'data_path': Template('ITOS/NICE/data/$version/class_headings_and_explanatory_notes'),
+        'file_basename': Template('$version-en-class_headings_and_explanatory_notes-$release'),
+        'main_elts': ['nice:ClassHeadingsExplanatoryNotes', 'nice:Class'],
+        'remove_elts': [],
+        'main_attrs': ['classNumber', 'dateInForce'],
+        'skip_attrs': [],
+        'remove_attrs': ['xsi:schemaLocation'],
+        'remove_attrs_val': [],
+        'mixed_elts': [
+            'nice:HeadingItem', 'nice:Introduction',
+            'nice:Include', 'nice:Exclude'
+        ],
+        'container_elts': [
+            'nice:ClassHeadingsExplanatoryNotes', 'nice:Class', 'nice:ClassHeading',
+            'nice:ExplanatoryNote', 'nice:IncludesInParticular',
+            'nice:ExcludesInParticular', 'nice:HeadingItem',
+            'nice:Introduction', 'nice:Include', 'nice:Exclude'
+        ]
     }
 }
 

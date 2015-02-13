@@ -105,7 +105,6 @@
 			renderColumns: function(event, data) {
 				var node = data.node;
 				$tdList = $(node.tr).find(">td");
-				$tdList.eq(0).addClass("symbol");
 
 				if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
 				else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
@@ -220,7 +219,7 @@
 	</div>
 	<table id="tree" width="100%">
 		<colgroup>
-			<col style="width: 200px;">
+			<col style="width: 300px;">
 			<col style="width: 200px;">
 			<col style="width: 1*;">
 			<col style="width: 1*;">
