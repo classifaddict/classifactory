@@ -113,7 +113,7 @@ class Element(models.Model):
             return '<dl>%s</dl>' % ''.join(
                 [a.attr_html() for a in self.attributes.all()]
             )
-        return None
+        return ''
 
     def __unicode__(self):
         return self.type.name
