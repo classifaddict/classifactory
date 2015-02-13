@@ -163,16 +163,17 @@
 	function get_pagination(target, base_url, page) {
 		$.getJSON(base_url+page, function(data) {
 			$("#"+target).empty();
-			$("#"+target).append('&nbsp;'+target+': ')
+			$("#"+target).append('&nbsp;'+target+': ');
 			insert_pg_button(target, base_url, data.previous, '&lt');
 			var pg_len = 5;
 			var x = 0;
-			if (data.previous) x = parseInt(data.previous.substr(6))
+			if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;
 			$.each(data.results, function(key, result) {
-				var hit = parseInt(key) + 1 + x * pg_len;
+				var hit = parseInt(key) + 1 + x;
 			    $("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
 			});
 			insert_pg_button(target, base_url, data.next, '&gt');
+			$("#"+target).append('&nbsp;'+data.count);
 		});
 	}
 
@@ -190,20 +191,20 @@
 		node.scrollIntoView();
 	}
 
-	function reach_node(tree, path_keys, target) {
+	function reach_node(tree, path_keys, target_key) {
 		var key = path_keys.pop();
 		var node = tree.getNodeByKey(key.key);
 		node.setExpanded(true).done(function(){
 			if (path_keys.length==0) {
-				if (node.key == target) {
+				if (node.key == target_key) {
 					select_node(node);
 				} else {
 					node.visit(function(childNode) {
-	                    if (childNode.key == target) select_node(childNode);
+	                    if (childNode.key == target_key) select_node(childNode);
 	                });
 	            }
 			} else {
-				reach_node(tree, path_keys, target);
+				reach_node(tree, path_keys, target_key);
 			}
 		});
 	}
