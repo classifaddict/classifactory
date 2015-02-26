@@ -106,15 +106,15 @@
 				var node = data.node;
 				$tdList = $(node.tr).find(">td");
 
+				if (node.data.diff_kind) {
+					$tdList.eq(0).addClass(node.data.diff_kind);
+				}
+
 				if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
 				else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
 
 				if (node.data.text_diff) $tdList.eq(2).html(node.data.text_diff);
 				else if (node.data.text) $tdList.eq(2).html(node.data.text);
-
-				if (node.data.diff_kind) {
-					$tdList.eq(0).addClass(node.data.diff_kind);
-				}
 			},
 			click: function(event, data) {
 				// data.targetType is undefined when clicked column is not the main node one
@@ -148,7 +148,7 @@
 			}
 		});
 
-		get_pagination("Differences", "{% url 'home' %}diffs/20150101/", "");
+		get_pagination("Differences", "{% url 'home' %}diffs/20170101/", "");
 
 	});
 

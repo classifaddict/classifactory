@@ -62,6 +62,8 @@ class ChildFancySerializer(KeySerializer):
     attrs = serializers.CharField(source='element.attributes_html')
     text = serializers.CharField(source='element.text.texts_html')
 
+
+class ChildDiffFancySerializer(ChildFancySerializer):
     text_diff = serializers.CharField()
     attrs_diff = serializers.CharField()
     diff_kind = serializers.CharField()

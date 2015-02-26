@@ -6,7 +6,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.renderers import JSONRenderer
 
 from models import TreeNode
-from serializers import ElementSerializer, ChildFancySerializer, KeySerializer, PaginatedKeySerializer
+from serializers import ElementSerializer, ChildFancySerializer, ChildDiffFancySerializer,KeySerializer, PaginatedKeySerializer
 
 
 def home(request):
@@ -59,7 +59,7 @@ def element_fancy_roots(request):
         treenode = TreeNode.objects.root_nodes().select_related('element').prefetch_related(
             'element__attributes'
         )
-        serializer = ChildFancySerializer(treenode, many=True)
+        serializer = ChildDiffFancySerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
 
@@ -73,7 +73,7 @@ def element_fancy_children(request, pk):
         treenode = TreeNode.objects.select_related('element').prefetch_related(
             'element__attributes'
         ).filter(parent=pk)
-        serializer = ChildFancySerializer(treenode, many=True)
+        serializer = ChildDiffFancySerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
 
