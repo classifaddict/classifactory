@@ -1,234 +1,234 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-	<script src="http://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
-	<script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
-	<link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
-	<script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
-	<style type="text/css">
-		body {
-			font-family: Arial, Helvetica, sans-serif;
-			font-size: 14px;
-		}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <script src="http://cdn.jsdelivr.net/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+    <link href="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
+    <script src="http://cdn.jsdelivr.net/jquery.fancytree/2.4.1/jquery.fancytree-all.min.js"></script>
+    <style type="text/css">
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+        }
 
-		div#top {
-			position:fixed;
-			top:0px;
-			left:0px;
-			width:100%;
-			color:#CCC;
-			background:#333;
-			padding:8px;
-		}
+        div#top {
+            position:fixed;
+            top:0px;
+            left:0px;
+            width:100%;
+            color:#CCC;
+            background:#333;
+            padding:8px;
+        }
 
-		table {
-			border-collapse: collapse;
-			border-spacing: 0;
-			margin-top: 80px;
-		}
-		td {
-			vertical-align: top;
-		}
-		dl {
-			margin: 0;
-			padding: 0.1em 0 0 0;
-		}
-		dt {
-			float: left;
-			clear: left;
-			display: none;
-		}
-		dt:after {
-			content: ":";
-		}
-		dl.showattr dt {
-			display: block;
-		}
-		dd {
-			margin: 0 0 0 10px;
-			padding: 0;
-			display: none;
-		}
-		dd.main {
-			font-weight: bold;
-			display: inline;
-		}
-		dl.showattr dd {
-			margin: 0 0 0 80px;
-			display: block;
-		}
-		td.mod span {
-			color: orange;
-		}
-		ins, td.ins span, td.ins dl dd {
-			color: green;
-			text-decoration: none;
-		}
-		del, td.del span, td.del dl dd {
-			color: red;
-			text-decoration: line-through;
-		}
-		/*table.fancytree-ext-table tbody tr td {
-			border: 0 none transparent;
-		}*/
-		ul.fancytree-container ul {
-			padding: 0 0 0 0;
-		}
-	</style>
-	<script>
-	$(function(){
-		$("#tree").fancytree({
-	        source: {
-	        url: "{% url 'roots' %}",
-	        cache: false
-	      },
-	      lazyLoad: function(event, data){
-		      var node = data.node;
-		      data.result = {
-		        url: "{% url 'home' %}" + node.key + "/",
-		        cache: false
-		      };
-	      },
-			activeVisible: true, // Make sure, active nodes are visible (expanded).
-			//aria: true, // Enable WAI-ARIA support.
-			autoActivate: true, // Automatically activate a node when it is focused (using keys).
-			icons: false,
-			debugLevel: 2, // 0:quiet, 1:normal, 2:debug
-			extensions: ["table"],
-			scrollParent: $(window),
-			table: {
-				indentation: 10,
-				nodeColumnIdx: 0
-			},
-			renderColumns: function(event, data) {
-				var node = data.node;
-				$tdList = $(node.tr).find(">td");
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-top: 80px;
+        }
+        td {
+            vertical-align: top;
+        }
+        dl {
+            margin: 0;
+            padding: 0.1em 0 0 0;
+        }
+        dt {
+            float: left;
+            clear: left;
+            display: none;
+        }
+        dt:after {
+            content: ":";
+        }
+        dl.showattr dt {
+            display: block;
+        }
+        dd {
+            margin: 0 0 0 10px;
+            padding: 0;
+            display: none;
+        }
+        dd.main {
+            font-weight: bold;
+            display: inline;
+        }
+        dl.showattr dd {
+            margin: 0 0 0 80px;
+            display: block;
+        }
+        td.mod span {
+            color: orange;
+        }
+        ins, td.ins span, td.ins dl dd {
+            color: green;
+            text-decoration: none;
+        }
+        del, td.del span, td.del dl dd {
+            color: red;
+            text-decoration: line-through;
+        }
+        /*table.fancytree-ext-table tbody tr td {
+            border: 0 none transparent;
+        }*/
+        ul.fancytree-container ul {
+            padding: 0 0 0 0;
+        }
+    </style>
+    <script>
+    $(function(){
+        $("#tree").fancytree({
+            source: {
+                url: "{% url 'roots' %}",
+                cache: false
+            },
+            lazyLoad: function(event, data){
+                var node = data.node;
+                data.result = {
+                    url: "{% url 'home' %}" + node.key + "/",
+                    cache: false
+                };
+            },
+            activeVisible: true, // Make sure, active nodes are visible (expanded).
+            //aria: true, // Enable WAI-ARIA support.
+            autoActivate: true, // Automatically activate a node when it is focused (using keys).
+            icons: false,
+            debugLevel: 2, // 0:quiet, 1:normal, 2:debug
+            extensions: ["table"],
+            scrollParent: $(window),
+            table: {
+                indentation: 10,
+                nodeColumnIdx: 0
+            },
+            renderColumns: function(event, data) {
+                var node = data.node;
+                $tdList = $(node.tr).find(">td");
 
-				if (node.data.diff_kind) {
-					$tdList.eq(0).addClass(node.data.diff_kind);
-				}
+                if (node.data.diff_kind) {
+                    $tdList.eq(0).addClass(node.data.diff_kind);
+                }
 
-				if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
-				else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
+                if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
+                else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
 
-				if (node.data.text_diff) $tdList.eq(2).html(node.data.text_diff);
-				else if (node.data.text) $tdList.eq(2).html(node.data.text);
-			},
-			click: function(event, data) {
-				// data.targetType is undefined when clicked column is not the main node one
-				if (!data.targetType) {
-					$tdList = $(data.node.tr).find(">td");
-					$tdList.eq(1).find(">dl").toggleClass('showattr');
-				}
-			}
-		});
+                if (node.data.text_diff) $tdList.eq(2).html(node.data.text_diff);
+                else if (node.data.text) $tdList.eq(2).html(node.data.text);
+            },
+            click: function(event, data) {
+                // data.targetType is undefined when clicked column is not the main node one
+                if (!data.targetType) {
+                    $tdList = $(data.node.tr).find(">td");
+                    $tdList.eq(1).find(">dl").toggleClass('showattr');
+                }
+            }
+        });
 
-		$("#search").submit(function(event) {
-			var query = $("input").val();
-			var url = "{% url 'home' %}search/"+query+'/';
-			get_pagination("Results", url, "");
-			event.preventDefault();
-		});
+        $("#search").submit(function(event) {
+            var query = $("input").val();
+            var url = "{% url 'home' %}search/"+query+'/';
+            get_pagination("Results", url, "");
+            event.preventDefault();
+        });
 
-		$('#hideattrs').click(function() {
-			$("dl").removeClass('showattr');
-			var active = $("#tree").fancytree("getTree").getActiveNode();
-			if (active){
-				active.scrollIntoView();
-			}
-		});
+        $('#hideattrs').click(function() {
+            $("dl").removeClass('showattr');
+            var active = $("#tree").fancytree("getTree").getActiveNode();
+            if (active){
+                active.scrollIntoView();
+            }
+        });
 
-		$('#showattrs').click(function() {
-			$("dl").addClass('showattr');
-			var active = $("#tree").fancytree("getTree").getActiveNode();
-			if (active){
-				active.scrollIntoView();
-			}
-		});
+        $('#showattrs').click(function() {
+            $("dl").addClass('showattr');
+            var active = $("#tree").fancytree("getTree").getActiveNode();
+            if (active){
+                active.scrollIntoView();
+            }
+        });
 
-		get_pagination("Differences", "{% url 'home' %}diffs/20170101/", "");
+        get_pagination("Differences", "{% url 'home' %}diffs/ipc_scheme/20170101/", "");
 
-	});
+    });
 
-	function insert_pg_button(target, base_url, page, icon) {
-		if (page) {
-			var params = "'"+target+"', '"+base_url+"', '"+page+"'";
-			$("#"+target).append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_pagination('+params+');">'+icon+';</a>');
-		}
-	}
+    function insert_pg_button(target, base_url, page, icon) {
+        if (page) {
+            var params = "'"+target+"', '"+base_url+"', '"+page+"'";
+            $("#"+target).append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_pagination('+params+');">'+icon+';</a>');
+        }
+    }
 
-	function get_pagination(target, base_url, page) {
-		$.getJSON(base_url+page, function(data) {
-			$("#"+target).empty();
-			$("#"+target).append('&nbsp;'+target+': ');
-			insert_pg_button(target, base_url, data.previous, '&lt');
-			var pg_len = 5;
-			var x = 0;
-			if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;
-			$.each(data.results, function(key, result) {
-				var hit = parseInt(key) + 1 + x;
-			    $("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
-			});
-			insert_pg_button(target, base_url, data.next, '&gt');
-			$("#"+target).append('&nbsp;'+data.count);
-		});
-	}
+    function get_pagination(target, base_url, page) {
+        $.getJSON(base_url+page, function(data) {
+            $("#"+target).empty();
+            $("#"+target).append('&nbsp;'+target+': ');
+            insert_pg_button(target, base_url, data.previous, '&lt');
+            var pg_len = 5;
+            var x = 0;
+            if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;
+            $.each(data.results, function(key, result) {
+                var hit = parseInt(key) + 1 + x;
+                $("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
+            });
+            insert_pg_button(target, base_url, data.next, '&gt');
+            $("#"+target).append('&nbsp;'+data.count);
+        });
+    }
 
-	function reach(node) {
-		$.getJSON("{% url 'home' %}ancestors/" + node + "/", function(data) {
-			var tree = $("#tree").fancytree("getTree");
-			reach_node(tree, data, node);
-		});
-	}
+    function reach(node) {
+        $.getJSON("{% url 'home' %}ancestors/" + node + "/", function(data) {
+            var tree = $("#tree").fancytree("getTree");
+            reach_node(tree, data, node);
+        });
+    }
 
-	function select_node(node) {
-		node.setTitle('<b style="font-weight: bold;text-decoration: underline;">'+node.title+'</b>');
-		node.setActive();
-		node.setFocus();
-		node.scrollIntoView();
-	}
+    function select_node(node) {
+        node.setTitle('<b style="font-weight: bold;text-decoration: underline;">'+node.title+'</b>');
+        node.setActive();
+        node.setFocus();
+        node.scrollIntoView();
+    }
 
-	function reach_node(tree, path_keys, target_key) {
-		var key = path_keys.pop();
-		var node = tree.getNodeByKey(key.key);
-		node.setExpanded(true).done(function(){
-			if (path_keys.length==0) {
-				if (node.key == target_key) {
-					select_node(node);
-				} else {
-					node.visit(function(childNode) {
-	                    if (childNode.key == target_key) select_node(childNode);
-	                });
-	            }
-			} else {
-				reach_node(tree, path_keys, target_key);
-			}
-		});
-	}
-	</script>
+    function reach_node(tree, path_keys, target_key) {
+        var key = path_keys.pop();
+        var node = tree.getNodeByKey(key.key);
+        node.setExpanded(true).done(function(){
+            if (path_keys.length==0) {
+                if (node.key == target_key) {
+                    select_node(node);
+                } else {
+                    node.visit(function(childNode) {
+                        if (childNode.key == target_key) select_node(childNode);
+                    });
+                }
+            } else {
+                reach_node(tree, path_keys, target_key);
+            }
+        });
+    }
+    </script>
 </head>
 <body>
-	<div id="top">
-	<form id="search">
-		<input type="text" name="query" size="100">
-		<input type="submit" value="Search"><span id="Results"></span>
-	</form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
-	<span id="Differences"></span>
-	</div>
-	<table id="tree" width="100%">
-		<colgroup>
-			<col style="width: 300px;">
-			<col style="width: 200px;">
-			<col style="width: 1*;">
-			<col style="width: 1*;">
-		</colgroup>
-		<thead>
-			<tr><th>ELEMENT</th> <th>ATTRIBUTES</th> <th>TEXT 1</th> <th>TEXT 2</th> </tr>
-		</thead>
-		<tbody>
-		</tbody>
-	</table>
+    <div id="top">
+    <form id="search">
+        <input type="text" name="query" size="100">
+        <input type="submit" value="Search"><span id="Results"></span>
+    </form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
+    <span id="Differences"></span>
+    </div>
+    <table id="tree" width="100%">
+        <colgroup>
+            <col style="width: 300px;">
+            <col style="width: 200px;">
+            <col style="width: 1*;">
+            <col style="width: 1*;">
+        </colgroup>
+        <thead>
+            <tr><th>ELEMENT</th> <th>ATTRIBUTES</th> <th>TEXT 1</th> <th>TEXT 2</th> </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </body>
 </html>

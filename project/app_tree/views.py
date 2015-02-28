@@ -196,10 +196,11 @@ def element_fancy_search(request, query):
     return JSONResponse(serializer.data)
 
 
-def diffs(request, dataset_name):
+def diffs(request, doctype_name, dataset_name):
     queryset = TreeNode.objects.select_related(
         'dataset', 'tree2_diffs'
     ).filter(
+        dataset__doctype__name=doctype_name,
         dataset__name=dataset_name,
         tree2_diffs__isnull=False
     )
