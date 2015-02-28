@@ -179,7 +179,7 @@ def element_fancy_search(request, query):
                 element__type__name=param
             )
 
-    paginator = Paginator(queryset, 5)
+    paginator = Paginator(queryset, 1)
     page = request.GET.get('page')
     try:
         diffs = paginator.page(page)
@@ -205,7 +205,7 @@ def diffs(request, doctype_name, dataset_name):
         tree2_diffs__isnull=False
     )
 
-    paginator = Paginator(queryset, 5)
+    paginator = Paginator(queryset, 1)
     page = request.GET.get('page')
     try:
         diffs = paginator.page(page)

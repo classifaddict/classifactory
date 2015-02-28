@@ -156,6 +156,8 @@
         if (page) {
             var params = "'"+target+"', '"+base_url+"', '"+page+"'";
             $("#"+target).append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_pagination('+params+');">'+icon+';</a>');
+        } else {
+        	$("#"+target).append('&nbsp;'+icon);
         }
     }
 
@@ -163,16 +165,20 @@
         $.getJSON(base_url+page, function(data) {
             $("#"+target).empty();
             $("#"+target).append('&nbsp;'+target+': ');
-            insert_pg_button(target, base_url, data.previous, '&lt');
-            var pg_len = 5;
-            var x = 0;
-            if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;
-            $.each(data.results, function(key, result) {
-                var hit = parseInt(key) + 1 + x;
-                $("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
-            });
-            insert_pg_button(target, base_url, data.next, '&gt');
-            $("#"+target).append('&nbsp;'+data.count);
+            if (data.count > 0) {
+	            insert_pg_button(target, base_url, data.previous, '&lt');
+	            insert_pg_button(target, base_url, data.next, '&gt');
+	            var pg_len = 1;
+	            var x = 0;
+	            if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;
+	            $.each(data.results, function(key, result) {
+	                var hit = parseInt(key) + 1 + x;
+	                //$("#"+target).append('&nbsp;[<a href="#" style="color: white;" onclick="javascript:reach('+result.key+');">' + hit + '</a>]');
+	                $("#"+target).append('&nbsp;'+hit+'/');
+	                reach(result.key);
+	            });
+	        }
+            $("#"+target).append(data.count);
         });
     }
 
