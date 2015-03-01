@@ -153,7 +153,12 @@
             }
         });
 
-        get_pagination("Differences", "{% url 'home' %}diffs/ipc_scheme/20170101/", "");
+        $("#diff").change(function(event) {
+            var query = "ipc_scheme/20170101";
+            var url = "{% url 'home' %}diffs/"+query+'/';
+            get_pagination("Differences", url, "");
+            event.preventDefault();
+        });
 
     });
 
@@ -169,7 +174,7 @@
     function get_pagination(target, base_url, page) {
         $.getJSON(base_url+page, function(data) {
             $("#"+target).empty();
-            $("#"+target).append('&nbsp;'+target+': ');
+            //$("#"+target).append('&nbsp;'+target+': ');
             if (data.count > 0) {
 	            insert_pg_button(target, base_url, data.previous, '&lt');
 	            insert_pg_button(target, base_url, data.next, '&gt');
@@ -223,10 +228,16 @@
 <body>
     <div id="top">
     <form id="search">
-        <input type="text" name="query" size="100">
+        Search nodes: <input type="text" name="query" size="100">
         <input type="submit" value="Search"><span id="Results"></span>
-    </form><button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
-    <span id="Differences"></span>
+    </form>
+    <form id="diff">
+    	Differences: &nbsp;&nbsp;&nbsp;&nbsp;<select form="diff" name="diff">
+    	<option selected="selected">None</option>
+        <option value="ipc_scheme/20170101">IPC Scheme 2017.01</option>
+        </select><span id="Differences"></span>
+    </form>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
     </div>
     <table id="tree" width="100%">
         <colgroup>
@@ -236,7 +247,7 @@
             <col style="width: 1*;">
         </colgroup>
         <thead>
-            <tr><th>ELEMENT</th> <th>ATTRIBUTES</th> <th>TEXT 1</th> <th>TEXT 2</th> </tr>
+            <tr><th>ELEMENT</th> <th>ATTRIBUTES</th> <th>TEXT</th> <!--th>TEXT 2</th--> </tr>
         </thead>
         <tbody>
         </tbody>
