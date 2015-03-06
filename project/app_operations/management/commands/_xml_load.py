@@ -161,11 +161,11 @@ class XMLTreeLoader:
             self.store_treeleaves_and_types()
 
         with transaction.atomic():
-            with TreeNode.objects.disable_mptt_updates():
+            with TreeNode.objects.delay_mptt_updates():
                 log('Storing treenodes...')
                 self.store_treenode(self.root)
-            log('Rebuilding tree...')
-            TreeNode.objects.rebuild()
+
+        log('Done.')
 
     def tag(self, tagname):
         # Replaces URI prefix by local prefix within qualified tag name
