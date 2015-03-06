@@ -6,6 +6,7 @@ from string import Template
 
 from lxml import etree
 from django.conf import settings
+from django.db import  transaction
 
 from app_tree.models import Doctype, ElementType, AttributeType
 from app_tree.models import Dataset, Element, Attribute, Text, TreeNode
@@ -159,8 +160,12 @@ class XMLTreeLoader:
         else:
             self.store_treeleaves_and_types()
 
-        log('Storing treenodes...')
-        self.store_treenode(self.root)
+        with transaction.atomic():
+            with TreeNode.objects.disable_mptt_updates():
+                log('Storing treenodes...')
+                self.store_treenode(self.root)
+            log('Rebuilding tree...')
+            TreeNode.objects.rebuild()
 
     def tag(self, tagname):
         # Replaces URI prefix by local prefix within qualified tag name
@@ -450,11 +455,12 @@ class XMLTreeLoader:
     def store_treenode(self, elt, parent=None):
         # Attach retrieved leaf element to a new treenode
         # Leaf element is retrieved by keys collected during leaves storage
-        treenode = TreeNode.objects.create(
+        treenode = TreeNode(
             parent=parent,
             dataset=self.dataset,
             element_id=self.elts[tuple(elt.get('eltkey4node').split('_'))]
         )
+        treenode.save()
 
         # Process children nodes
         if self.tag(elt.tag) not in self.dt_conf['mixed_elts']:
