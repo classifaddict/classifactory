@@ -199,7 +199,7 @@ class XMLTreeLoader:
 
     def get_elts(self):
         return dict([(
-            (e['type__name'], e['text__name'], e['attrs_key']), e['id']
+            '_'.join([e['type__name'], e['text__name'], e['attrs_key']]), e['id']
         ) for e in Element.objects.select_related(
             'elementtype', 'text'
         ).filter(type__doctype=self.doctype).values(
@@ -268,7 +268,7 @@ class XMLTreeLoader:
 
         attrs_sets = []
         for name, text_name, attrs_key, attrs in new_elts_values:
-            e = self.elts[(name, text_name, attrs_key)]
+            e = self.elts['_'.join([name, text_name, attrs_key])]
             for a in attrs:
                 attrs_sets.append(
                     through_model(
@@ -451,14 +451,14 @@ class XMLTreeLoader:
 
         self.store_elements(new_elts_values)
 
-    @with_connection_usable
+    #@with_connection_usable
     def store_treenode(self, elt, parent=None):
         # Attach retrieved leaf element to a new treenode
         # Leaf element is retrieved by keys collected during leaves storage
         treenode = TreeNode(
             parent=parent,
             dataset=self.dataset,
-            element_id=self.elts[tuple(elt.get('eltkey4node').split('_'))]
+            element_id=self.elts[elt.get('eltkey4node')]
         )
         treenode.save()
 

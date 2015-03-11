@@ -1,4 +1,10 @@
+import time
+from django.db import  transaction
 from app_tree.models import Doctype, Element, Attribute, Text, TreeNode, Diff
+
+
+def log(msg):
+    print '(%s) %s' % (time.strftime('%H:%M:%S'), msg)
 
 
 class DiffTrees:
@@ -13,7 +19,9 @@ class DiffTrees:
             dataset__doctype__name=doctype_name
         )
 
-        self.diff(root1, root2)
+        with transaction.atomic():
+            with TreeNode.objects.delay_mptt_updates():
+                self.diff(root1, root2)
 
     def value(self, node):
         return (
@@ -213,4 +221,6 @@ class DiffTrees:
 
 
 def diff_trees(doctype_name, dataset_version1, dataset_version2):
+    log('Diffing %s and %s...' % (dataset_version1, dataset_version2))
     DiffTrees(doctype_name, dataset_version1, dataset_version2)
+    log('Done.')
