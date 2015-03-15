@@ -31,7 +31,8 @@ admin.site.register(AttributeType, AttributeTypeAdmin)
 
 
 class TreeNodeAdmin(DjangoMpttAdmin):
-    pass
+    list_display = ('element', 'dataset', 'is_diff_only')
+    list_filter = ('is_diff_only', 'dataset')
 
 admin.site.register(TreeNode, TreeNodeAdmin)
 

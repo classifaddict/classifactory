@@ -2,7 +2,6 @@ import os
 import zipfile
 import time
 from hashlib import md5
-from string import Template
 
 from lxml import etree
 from django.conf import settings
@@ -17,110 +16,28 @@ from app_operations.decorators import with_connection_usable
 def log(msg):
     print '(%s) %s' % (time.strftime('%H:%M:%S'), msg)
 
-doctypes_conf = {
-    'ipc_scheme': {
-        'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
-        'zip_name': Template('ipcr_scheme_$version$release.zip'),
-        'xml_name': Template('ipcr_scheme_$version$release.xml'),
-        'main_elts': ['revisionPeriods', 'ipcEntry'],
-        'remove_elts': ['fr'],
-        'main_attrs': ['symbol', 'kind'],
-        'skip_attrs': [], # ['edition'],
-        'remove_attrs': ['lang', 'ipcLevel', 'priorityOrder'],
-        'remove_attrs_val': [],
-        'mixed_elts': ['text', 'references', 'entryReference'],
-        'container_elts': [
-            'revisionPeriods', 'revisionPeriod', 'ipcEdition', 'en', 'fr',
-            'translation', 'staticIpc', 'ipcEntry', 'textBody', 'note', 'index',
-            'title', 'noteParagraph', 'text', 'references', 'subnote', 'orphan',
-            'indexEntry', 'titlePart', 'entryReference'
-        ]
-    },
-    'nice_indications': {
-        'data_path': Template('ITOS/NICE/data/$version/indications'),
-        'zip_name': Template('$version-indications-$release.zip'),
-        'xml_name': Template('$version-$lang-indications-$release.xml'),
-        'main_elts': ['nice:Indications', 'nice:GoodOrService'],
-        'remove_elts': [],
-        'main_attrs': ['basicNumber', 'dateInForce'],
-        'skip_attrs': [],
-        'remove_attrs': ['xsi:schemaLocation'],
-        'remove_attrs_val': [],
-        'mixed_elts': [
-            'nice:Label', 'nice:SortExpression',
-            'nice:AlternateSortExpression'
-        ],
-        'container_elts': [
-            'nice:Indications', 'nice:GoodOrService', 'nice:Indication',
-            'nice:SynonymIndication', 'nice:Label',
-            'nice:SortExpression', 'nice:AlternateSortExpression'
-        ]
-    },
-    'nice_classes': {
-        'data_path': Template('ITOS/NICE/data/$version/class_headings_and_explanatory_notes'),
-        'zip_name': Template('$version-class_headings_and_explanatory_notes-$release.zip'),
-        'xml_name': Template('$version-$lang-class_headings_and_explanatory_notes-$release.xml'),
-        'main_elts': ['nice:ClassHeadingsExplanatoryNotes', 'nice:Class'],
-        'remove_elts': [],
-        'main_attrs': ['classNumber', 'dateInForce'],
-        'skip_attrs': [],
-        'remove_attrs': ['xsi:schemaLocation'],
-        'remove_attrs_val': [],
-        'mixed_elts': [
-            'nice:HeadingItem', 'nice:Introduction',
-            'nice:Include', 'nice:Exclude'
-        ],
-        'container_elts': [
-            'nice:ClassHeadingsExplanatoryNotes', 'nice:Class', 'nice:ClassHeading',
-            'nice:ExplanatoryNote', 'nice:IncludesInParticular',
-            'nice:ExcludesInParticular', 'nice:HeadingItem',
-            'nice:Introduction', 'nice:Include', 'nice:Exclude'
-        ]
-    }
-}
-
 
 class XMLTreeLoader:
     def __init__(self, doctype_name, dataset_version, lang, file_release, no_types, xml):
-        self.dt_conf = doctypes_conf[doctype_name]
+        self.dt_conf = settings.DOCTYPES[doctype_name]
+        self.xml = xml
+        self.lang = lang
 
-        data_path = os.path.join(
-            settings.DATA_DIR,
-            self.dt_conf['data_path'].substitute(version=dataset_version)
-        )
-
-        xml_name = self.dt_conf['xml_name'].substitute(
-            version=dataset_version,
-            lang=lang,
-            release=file_release
-        )
-
-        if xml:
-            file_obj = open(os.path.join(data_path, xml_name))
-        else:
-            zip_name = self.dt_conf['zip_name'].substitute(
-                version=dataset_version,
-                release=file_release
-            )
-            zip_file = zipfile.ZipFile(os.path.join(data_path, zip_name))
-            file_obj = zip_file.open(xml_name)
-
-        parser = etree.XMLParser(
+        self.parser = etree.XMLParser(
             remove_blank_text=True,
             ns_clean=True,
             remove_comments=True
         )
 
-        tree = etree.parse(file_obj, parser)
-        self.root = tree.getroot()
+        root = self.get_tree_root(dataset_version, file_release)
 
         # Get namespace(s) info
-        self.NSMAP = self.root.nsmap
+        self.NSMAP = root.nsmap
         self.NSpfx = ''
         self.NS = ''
-        if self.root.prefix is not None:
-            self.NSpfx = self.root.prefix + ":"
-            self.NS = "{%s}" % self.NSMAP[self.root.prefix]
+        if root.prefix is not None:
+            self.NSpfx = root.prefix + ":"
+            self.NS = "{%s}" % self.NSMAP[root.prefix]
 
         self.doctype, c = Doctype.objects.get_or_create(name=doctype_name)
 
@@ -152,20 +69,45 @@ class XMLTreeLoader:
         self.elts = {}
 
         log('Cleaning up...')
-        self.cleanup()
+        self.cleanup(root)
 
         log('Storing elements, attributes and texts...')
         if no_types:
-            self.store_treeleaves()
+            self.store_treeleaves(root)
         else:
-            self.store_treeleaves_and_types()
+            self.store_treeleaves_and_types(root)
 
         with transaction.atomic():
             with TreeNode.objects.delay_mptt_updates():
                 log('Storing treenodes...')
-                self.store_treenode(self.root)
+                self.store_treenode(root)
 
         log('Done.')
+
+    def get_tree_root(self, dataset_version, file_release):
+        data_path = os.path.join(
+            settings.DATA_DIR,
+            self.dt_conf['data_path'].substitute(version=dataset_version)
+        )
+
+        xml_name = self.dt_conf['xml_name'].substitute(
+            version=dataset_version,
+            lang=self.lang,
+            release=file_release
+        )
+
+        if self.xml:
+            file_obj = open(os.path.join(data_path, xml_name))
+        else:
+            zip_name = self.dt_conf['zip_name'].substitute(
+                version=dataset_version,
+                release=file_release
+            )
+            zip_file = zipfile.ZipFile(os.path.join(data_path, zip_name))
+            file_obj = zip_file.open(xml_name)
+
+        tree = etree.parse(file_obj, self.parser)
+        return tree.getroot()
 
     def tag(self, tagname):
         # Replaces URI prefix by local prefix within qualified tag name
@@ -195,7 +137,7 @@ class XMLTreeLoader:
     def get_elt_types(self):
         return dict([(e['name'], e['id']) for e in ElementType.objects.filter(
             doctype=self.doctype
-        ).order_by().values('id', 'name')])
+        ).order_by().only('id', 'name').values('id', 'name')])
 
     def get_elts(self):
         return dict([(
@@ -209,13 +151,13 @@ class XMLTreeLoader:
     def get_texts(self):
         return dict([(e['name'], e['id']) for e in Text.objects.filter(
             doctype=self.doctype
-        ).values('id', 'name')])
+        ).only('id', 'name').values('id', 'name')])
 
-    def cleanup(self):
+    def cleanup(self, root):
         for r in self.dt_conf['remove_elts']:
             n = r.split(':')
             name = n[-1]
-            for e in self.root.xpath('//*[local-name() = "%s"]' % name):
+            for e in root.xpath('//*[local-name() = "%s"]' % name):
                 e.getparent().remove(e)
 
         for r in self.dt_conf['remove_attrs']:
@@ -225,7 +167,7 @@ class XMLTreeLoader:
             if len(n) > 1:
                 qname = '{%s}%s' % (self.NSMAP[n[0]], n[1])
 
-            for e in self.root.xpath('//*[@*[local-name() = "%s"]]' % name):
+            for e in root.xpath('//*[@*[local-name() = "%s"]]' % name):
                 e.attrib.pop(qname)
 
     @with_connection_usable
@@ -327,12 +269,12 @@ class XMLTreeLoader:
         e.set('eltkey4node', '_'.join(values))
 
     @with_connection_usable
-    def store_treeleaves(self):
+    def store_treeleaves(self, root):
         new_attr_values = []
         new_texts = []
         new_elts_values = []
 
-        for e in self.root.iter(self.tags(self.dt_conf['container_elts'])):
+        for e in root.iter(self.tags(self.dt_conf['container_elts'])):
             tag = self.tag(e.tag)
 
             text_name = self.create_text_object(e, tag, new_texts)
@@ -374,7 +316,7 @@ class XMLTreeLoader:
         through_model.objects.bulk_create(attrs_sets)
 
     @with_connection_usable
-    def store_treeleaves_and_types(self):
+    def store_treeleaves_and_types(self, root):
         attr_names = set([
             a['name'] for a in AttributeType.objects.filter(
                 doctype=self.doctype
@@ -396,7 +338,7 @@ class XMLTreeLoader:
         new_texts = []
         new_elts_values = []
 
-        for e in self.root.iter(self.tags(self.dt_conf['container_elts'])):
+        for e in root.iter(self.tags(self.dt_conf['container_elts'])):
             tag = self.tag(e.tag)
 
             # Create text object

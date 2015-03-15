@@ -1,6 +1,13 @@
+import os
 import time
-from django.db import  transaction
-from app_tree.models import Doctype, Element, Attribute, Text, TreeNode, Diff
+import zipfile
+import time
+import copy
+from hashlib import md5
+
+from lxml import etree
+
+from django.conf import settings
 
 
 def log(msg):
@@ -8,219 +15,204 @@ def log(msg):
 
 
 class DiffTrees:
-    def __init__(self, doctype_name, dataset_version1, dataset_version2):
-        root1 = TreeNode.objects.root_nodes().get(
-            dataset__name=dataset_version1,
-            dataset__doctype__name=doctype_name
+    def __init__(self, doctype_name, dataset_version1, dataset_version2, lang, file_release1, file_release2, xml):
+        self.dt_conf = settings.DOCTYPES[doctype_name]
+        self.xml = xml
+        self.lang = lang
+
+        self.parser = etree.XMLParser(
+            remove_blank_text=True,
+            ns_clean=True,
+            remove_comments=True
         )
 
-        root2 = TreeNode.objects.root_nodes().get(
-            dataset__name=dataset_version2,
-            dataset__doctype__name=doctype_name
+        old_root = self.get_tree_root(dataset_version1, file_release1, skip_attrs=self.dt_conf['skip_attrs'])
+        self.old_root_ET = etree.ElementTree(old_root)
+
+        new_root = self.get_tree_root(dataset_version2, file_release2, skip_attrs=self.dt_conf['skip_attrs'])
+        self.new_root_ET = etree.ElementTree(new_root)
+
+        self.diff(old_root, new_root)
+
+    def _cleanup(self, root, skip_attrs=[]):
+        for r in self.dt_conf['remove_elts']:
+            n = r.split(':')
+            name = n[-1]
+            for e in root.xpath('//*[local-name() = "%s"]' % name):
+                e.getparent().remove(e)
+
+        for r in self.dt_conf['remove_attrs'] + skip_attrs:
+            n = r.split(':')
+            name = n[-1]
+            qname = n[0]
+            if len(n) > 1:
+                qname = '{%s}%s' % (self.NSMAP[n[0]], n[1])
+
+            for e in root.xpath('//*[@*[local-name() = "%s"]]' % name):
+                e.attrib.pop(qname)
+
+    def get_tree_root(self, dataset_version, file_release, skip_attrs=[]):
+        data_path = os.path.join(
+            settings.DATA_DIR,
+            self.dt_conf['data_path'].substitute(version=dataset_version)
         )
 
-        with transaction.atomic():
-            with TreeNode.objects.delay_mptt_updates():
-                self.diff(root1, root2)
-
-    def value(self, node):
-        return (
-            node.element.type,
-            node.element.text,
-            node.element.main_attrs
+        xml_name = self.dt_conf['xml_name'].substitute(
+            version=dataset_version,
+            lang=self.lang,
+            release=file_release
         )
 
-    def children_values(self, node):
+        if self.xml:
+            file_obj = open(os.path.join(data_path, xml_name))
+        else:
+            zip_name = self.dt_conf['zip_name'].substitute(
+                version=dataset_version,
+                release=file_release
+            )
+            zip_file = zipfile.ZipFile(os.path.join(data_path, zip_name))
+            file_obj = zip_file.open(xml_name)
+
+        tree = etree.parse(file_obj, self.parser)
+        root = tree.getroot()
+        self._cleanup(root, skip_attrs)
+        return root
+
+    def get_attrs_str(self, node):
+        return ' '.join(['='.join([k, node.get(k)]) for k in sorted(node.keys())])
+
+    def _get_children_signs(self, node, root_ET):
+        # To get relative path: root_ET = etree.ElementTree(node)
+        return dict([(
+            md5(etree.tostring(c, method="c14n")).hexdigest(),
+            root_ET.getpath(c)
+        ) for c in node.iterchildren()])
+
+    def get_diff_children(self, node1, node2, root1_ET, root2_ET):
+        children_signs1 = self._get_children_signs(node1, root1_ET)
+        children_signs2 = self._get_children_signs(node2, root2_ET)
         return [
-            self.value(n) for n in node.get_children()
+            children_signs2[s] for s in set(
+                children_signs2.keys()
+            ).difference(
+                children_signs1.keys()
+            )
         ]
 
-    def create_shadow(self, node, dataset):
-        t = None
-        if node.element.type.is_mixed:
-            t, c = Text.objects.get_or_create(
-                contents='',
-                name='empty',
-                doctype=node.element.type.doctype
-            )
-        e, c = Element.objects.get_or_create(
-            type=node.element.type,
-            text=t,
-            attrs_key=node.element.attrs_key,
-            main_attrs=node.element.main_attrs
-        )
-        return TreeNode(
-            element=e, dataset=dataset, is_diff_only=True
-        )
+    def diff(self, old, new):
+        sign1 = md5(etree.tostring(old, method="c14n")).hexdigest()
+        sign2 = md5(etree.tostring(new, method="c14n")).hexdigest()
+        if sign1 != sign2:
+            diff_kinds = set()
+            del_children = []
+            ins_children = []
+            sibling_matches = []
 
-    def diff(self, node1, node2, main_attr=''):
-        main_attrs = node1.element.attributes.filter(type__is_main=True)
-        if main_attrs.exists():
-            main_attr = ' ' + ' '.join([a.value for a in main_attrs])
+            if old.tag != new.tag:
+                diff_kinds['name'] = True
+            else:
+                attrs1 = self.get_attrs_str(old)
+                attrs2 = self.get_attrs_str(new)
+                if attrs1 != attrs2:
+                    diff_kinds.add('attrs')
 
-        elt_name = node1.element.type.name
-        location = elt_name + main_attr
+                if old.tag in self.dt_conf['mixed_elts']:
+                    diff_kinds.add('txt')
 
-        try:
-            diff_obj = Diff.objects.get(treenode1=node1, treenode2=node2)
-        except:
-            diff_obj = Diff(treenode1=node1, treenode2=node2)
-
-        if diff_obj.is_del_diff:
-            print location + ' has been deleted.'
-            return
-            # No need to go on if node has been deleted
-
-        if diff_obj.is_ins_diff:
-            print location + ' has been inserted.'
-            return
-            # No need to go on if node has been inserted
-
-        if elt_name != node2.element.type.name:
-            print location + ' != ' + node2.element.type.name
-            if not node1.is_root_node():
-                diff_obj.is_type_diff = True
-                diff_obj.save()
-            return
-            # No need to go on if both elements are not of same type
-
-        if node1.element.main_attrs != node2.element.main_attrs:
-            print location + ' main attributes differ.'
-            if not node1.is_root_node():
-                diff_obj.is_attrs_diff = True
-                diff_obj.save()
-            return
-            # No need to go on if both elements are not of same kind
-
-        if node1.element.text and node1.element.text.name != node2.element.text.name:
-            print location + ' texts differ:'
-            print 'Text 1: ' + node1.element.text.contents
-            print 'Text 2: ' + node2.element.text.contents
-            diff_obj.is_texts_diff = True
-            diff_obj.save()
-
-        # if self.children_values(node1) != self.children_values(node2):
-        #     print location + ' children differ.'
-
-        seqdiff = True
-
-        if not seqdiff:
-            nodes1 = node1.get_children()
-            nodes2 = node2.get_children()
-            nodes1list = list(nodes1.all())
-
-            idx2 = 0
-            for n2 in node2.get_children():
-                match = False
-                idx2 += 1
-                idx1 = 0
-                if n2.element.type.is_mixed:
-                    #TODO: something smarter for text node
-                    continue
-                # if not nodes1list:
-                #     break
-                for n1 in node1.get_children():
-                    idx1 += 1
-                    if n1 in nodes1list and self.value(n1) == self.value(n2):
-                        match = True
-                        break
-                if match:
-                    nodes1list.remove(n1)
-                    print nodes1list
-                    print 'MATCH: %s ' % n1 + str(n1.element.attributes_html())
-                    if idx1 != idx2:
-                        print 'IDX1:%d != IDX2:%d' % (idx1, idx2)
-                        pass
-                else:
-                    print 'SHADOW: ' + str(n1.element.attributes_html())
-                    n = self.create_shadow(n1, n2.dataset)
-                    n.insert_at(n2, position='left', save=True)
-                    diff_obj, c = Diff.objects.get_or_create(
-                        treenode1=n1,
-                        treenode2=n
+                if len(old) > len(new):
+                    # Attempt to find children deleted from old tree
+                    del_children.extend(
+                        self.get_diff_children(
+                            new, old,
+                            etree.ElementTree(new),
+                            etree.ElementTree(old)
+                        )
                     )
-                    diff_obj.is_del_diff = True
-                    diff_obj.save()
+                    # If possible, clone each deleted node and insert it
+                    # in new tree at same location with attr mod=del
+                    if len(del_children) != len(old) - len(new):
+                        diff_kinds.add('struct')
+                        #for n in range(len(old) - len(new)):
+                        #    e = etree.SubElement(new, new[-1].tag, {'mod': 'del'})
+                    else:
+                        for path in sorted(del_children):
+                            old_elt = old.getparent().find('.' + path)
+                            idx = old.index(old_elt)
+                            clone = copy.deepcopy(old_elt)
+                            clone.set('mod', 'del')
+                            new.insert(idx, clone)
 
-        if seqdiff:
-            nb1 = node1.get_children().count()
-            nb2 = node2.get_children().count()
-
-            i = 0
-            imax = nb1 - nb2
-            while nb1 > nb2:
-                # Try to insert shadow node(s) in 2nd tree to obtain same size
-                if i == imax: break
-                i += 1
-                for nodes in zip(node1.get_children(), node2.get_children()):
-                    if nodes[0].element.type.is_mixed:
-                        #TODO: something smarter for text node
-                        continue
-                    if self.value(nodes[0]) != self.value(nodes[1]):
-                        n = self.create_shadow(nodes[0], nodes[1].dataset)
-                        n.insert_at(nodes[1], position='left', save=True)
-                        diff_obj, c = Diff.objects.get_or_create(
-                            treenode1=nodes[0],
-                            treenode2=n
+                elif len(old) < len(new):
+                    # Attempt to find children inserted in new tree
+                    ins_children.extend(
+                        self.get_diff_children(
+                            old, new,
+                            etree.ElementTree(old),
+                            etree.ElementTree(new)
                         )
-                        diff_obj.is_del_diff = True
-                        diff_obj.save()
-                        nb2 += 1
+                    )
+                    # If possible, set attr mod=ins to each inserted node, 
+                    # clone and insert it in old tree at same location
+                    if len(ins_children) != len(new) - len(old):
+                        diff_kinds.add('struct')
+                    else:
+                        for path in sorted(ins_children):
+                            new_elt = new.getparent().find('.' + path)
+                            idx = new.index(new_elt)
+                            clone = copy.deepcopy(new_elt)
+                            new_elt.set('mod', 'ins')
+                            old.insert(idx, clone)
+
+            if old.getparent() is not None:
+                for new_test in new.getparent().iterchildren():
+                    if sign1 == md5(etree.tostring(new_test, method="c14n")).hexdigest():
+                        parent_ET = etree.ElementTree(new.getparent())
+                        sibling_matches.append("Found old elsewhere in new parent: " + parent_ET.getpath(new_test))
                         break
-
-            node1_last_child = node1.get_children().last()
-            while nb1 > nb2:
-                # Add shadow node(s) in 2nd tree to obtain same size
-                n = self.create_shadow(node1_last_child, node2.dataset)
-                n.insert_at(node2, position='last-child', save=True)
-                diff_obj, c = Diff.objects.get_or_create(
-                    treenode1=node1_last_child,
-                    treenode2=n
-                )
-                diff_obj.is_del_diff = True
-                diff_obj.save()
-                nb2 += 1
-
-            i = 0
-            imax = nb2 - nb1
-            while nb2 > nb1:
-                # Try to insert shadow node(s) in 1st tree to obtain same size
-                if i == imax: break
-                i += 1
-                for nodes in zip(node1.get_children(), node2.get_children()):
-                    if nodes[0].element.type.is_mixed:
-                        #TODO: something smarter for text node
-                        continue
-                    if self.value(nodes[0]) != self.value(nodes[1]):
-                        n = self.create_shadow(nodes[1], nodes[0].dataset)
-                        n.insert_at(nodes[0], position='left', save=True)
-                        diff_obj, c = Diff.objects.get_or_create(
-                            treenode1=n,
-                            treenode2=nodes[1]
-                        )
-                        diff_obj.is_ins_diff = True
-                        diff_obj.save()
-                        nb1 += 1
+                for old_test in old.getparent().iterchildren():
+                    if sign2 == md5(etree.tostring(old_test, method="c14n")).hexdigest():
+                        parent_ET = etree.ElementTree(old.getparent())
+                        sibling_matches.append("Found new elsewhere in old parent: " + parent_ET.getpath(old_test))
                         break
+                if sibling_matches:
+                    diff_kinds.add('struct')
 
-            node2_last_child = node2.get_children().last()
-            while nb2 > nb1:
-                # Add shadow node(s) in 1st tree to obtain same size
-                n = self.create_shadow(node2_last_child, node1.dataset)
-                n.insert_at(node1, position='last-child', save=True)
-                diff_obj, c = Diff.objects.get_or_create(
-                    treenode1=n,
-                    treenode2=node2_last_child
-                )
-                diff_obj.is_ins_diff = True
-                diff_obj.save()
-                nb1 += 1
+            if diff_kinds:
+                print "\n<<<<<"
+                print self.old_root_ET.getpath(old)
+                print self.new_root_ET.getpath(new)
 
-        for nodes in zip(node1.get_children(), node2.get_children()):
-            self.diff(nodes[0], nodes[1], main_attr)
+                if 'name' in diff_kinds:
+                    print new.tag
+
+                if 'attrs' in diff_kinds:
+                    print attrs1
+                    print attrs2
+
+                if 'struct' in diff_kinds:
+                    if len(old) != len(new):
+                        print len(old)
+                        print len(new)
+                    if del_children: print 'DEL from old:\n' + '\n'.join(sorted(del_children))
+                    if ins_children: print 'INS in new:\n' + '\n'.join(sorted(ins_children))
+                    if sibling_matches: print '\n'.join(sibling_matches)
+
+                if 'txt' in diff_kinds:
+                    print etree.tostring(old, method="c14n")
+                    print etree.tostring(new, method="c14n")
+
+                print ">>>>>\n"
+            else:
+                print self.old_root_ET.getpath(old)
+        else:
+            return
+
+        if old.tag not in self.dt_conf['mixed_elts']:
+            for nodes in zip(old.iterchildren(), new.iterchildren()):
+                self.diff(nodes[0], nodes[1])
 
 
-def diff_trees(doctype_name, dataset_version1, dataset_version2):
+def diff_trees(doctype_name, dataset_version1, dataset_version2, lang='en', file_release1='', file_release2='', xml=False):
     log('Diffing %s and %s...' % (dataset_version1, dataset_version2))
-    DiffTrees(doctype_name, dataset_version1, dataset_version2)
+    DiffTrees(doctype_name, dataset_version1, dataset_version2, lang, file_release1, file_release2, xml)
     log('Done.')

@@ -40,7 +40,7 @@ INSTALLED_APPS = (
     'django_mptt_admin',
     'rest_framework',
     'app_operations',
-    'app_scheme',
+    #'app_scheme',
     'app_tree'
 )
 
@@ -65,10 +65,11 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'tree',
-        'USER': 'tree',
-        'PASSWORD': 'tree',
+        # 'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'classifactory',
+        'USER': 'classifactory',
+        'PASSWORD': 'c',
     }
 }
 
@@ -110,3 +111,66 @@ REST_FRAMEWORK = {
 DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
 
 DEPTHS = 'stcugm123456789AB'
+
+from string import Template
+DOCTYPES = {
+    'ipc_scheme': {
+        'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
+        'zip_name': Template('ipcr_scheme_$version$release.zip'),
+        'xml_name': Template('ipcr_scheme_$version$release.xml'),
+        'main_elts': ['revisionPeriods', 'ipcEntry'],
+        'remove_elts': ['fr'],
+        'main_attrs': ['symbol', 'kind'],
+        'skip_attrs': ['edition'],
+        'remove_attrs': ['lang', 'ipcLevel', 'priorityOrder', 'documentRoot'],
+        'remove_attrs_val': [],
+        'mixed_elts': ['text', 'references', 'entryReference'],
+        'container_elts': [
+            'revisionPeriods', 'revisionPeriod', 'ipcEdition', 'en', 'fr',
+            'translation', 'staticIpc', 'ipcEntry', 'textBody', 'note', 'index',
+            'title', 'noteParagraph', 'text', 'references', 'subnote', 'orphan',
+            'indexEntry', 'titlePart', 'entryReference'
+        ]
+    },
+    'nice_indications': {
+        'data_path': Template('ITOS/NICE/data/$version/indications'),
+        'zip_name': Template('$version-indications-$release.zip'),
+        'xml_name': Template('$version-$lang-indications-$release.xml'),
+        'main_elts': ['nice:Indications', 'nice:GoodOrService'],
+        'remove_elts': [],
+        'main_attrs': ['basicNumber', 'dateInForce'],
+        'skip_attrs': [],
+        'remove_attrs': ['xsi:schemaLocation'],
+        'remove_attrs_val': [],
+        'mixed_elts': [
+            'nice:Label', 'nice:SortExpression',
+            'nice:AlternateSortExpression'
+        ],
+        'container_elts': [
+            'nice:Indications', 'nice:GoodOrService', 'nice:Indication',
+            'nice:SynonymIndication', 'nice:Label',
+            'nice:SortExpression', 'nice:AlternateSortExpression'
+        ]
+    },
+    'nice_classes': {
+        'data_path': Template('ITOS/NICE/data/$version/class_headings_and_explanatory_notes'),
+        'zip_name': Template('$version-class_headings_and_explanatory_notes-$release.zip'),
+        'xml_name': Template('$version-$lang-class_headings_and_explanatory_notes-$release.xml'),
+        'main_elts': ['nice:ClassHeadingsExplanatoryNotes', 'nice:Class'],
+        'remove_elts': [],
+        'main_attrs': ['classNumber', 'dateInForce'],
+        'skip_attrs': [],
+        'remove_attrs': ['xsi:schemaLocation'],
+        'remove_attrs_val': [],
+        'mixed_elts': [
+            'nice:HeadingItem', 'nice:Introduction',
+            'nice:Include', 'nice:Exclude'
+        ],
+        'container_elts': [
+            'nice:ClassHeadingsExplanatoryNotes', 'nice:Class', 'nice:ClassHeading',
+            'nice:ExplanatoryNote', 'nice:IncludesInParticular',
+            'nice:ExcludesInParticular', 'nice:HeadingItem',
+            'nice:Introduction', 'nice:Include', 'nice:Exclude'
+        ]
+    }
+}
