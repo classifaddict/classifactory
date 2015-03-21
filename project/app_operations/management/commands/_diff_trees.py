@@ -26,15 +26,20 @@ class DiffTrees:
             remove_comments=True
         )
 
-        old_root = self.get_tree_root(dataset_version1, file_release1, skip_attrs=self.dt_conf['skip_attrs'])
+        old_root = self._get_tree_root(dataset_version1, file_release1, skip_attrs=self.dt_conf['skip_attrs'])
         self.old_root_ET = etree.ElementTree(old_root)
 
-        new_root = self.get_tree_root(dataset_version2, file_release2, skip_attrs=self.dt_conf['skip_attrs'])
+        new_root = self._get_tree_root(dataset_version2, file_release2, skip_attrs=self.dt_conf['skip_attrs'])
         self.new_root_ET = etree.ElementTree(new_root)
 
         self.diff(old_root, new_root)
 
     def _cleanup(self, root, skip_attrs=[]):
+        '''
+        Remove unwanted (as defined in settings.DOCTYPES)
+        nodes and/or attributes
+        '''
+
         for r in self.dt_conf['remove_elts']:
             n = r.split(':')
             name = n[-1]
@@ -51,7 +56,11 @@ class DiffTrees:
             for e in root.xpath('//*[@*[local-name() = "%s"]]' % name):
                 e.attrib.pop(qname)
 
-    def get_tree_root(self, dataset_version, file_release, skip_attrs=[]):
+    def _get_tree_root(self, dataset_version, file_release, skip_attrs=[]):
+        '''
+        Returns the root node of a (compressed) XML file.
+        '''
+
         data_path = os.path.join(
             settings.DATA_DIR,
             self.dt_conf['data_path'].substitute(version=dataset_version)
@@ -78,134 +87,181 @@ class DiffTrees:
         self._cleanup(root, skip_attrs)
         return root
 
-    def get_attrs_str(self, node):
+    def _get_attrs_str(self, node):
+        '''
+        Returns a String made of the node attribute
+        name/value pairs sorted by name
+        '''
+
         return ' '.join(['='.join([k, node.get(k)]) for k in sorted(node.keys())])
 
-    def _get_children_signs(self, node, root_ET):
-        # To get relative path: root_ET = etree.ElementTree(node)
+    def _get_node_FP(self, node):
+        '''
+        Returns a String made of MD5 hex digest of a node canonized subtree
+        '''
+
+        return md5(etree.tostring(node, method="c14n")).hexdigest()
+
+    def _get_children_FPs(self, node, root_ET=None, relative=False):
+        '''
+        Returns a Dict:
+        - Key: MD5 fingerprint of a child node subtree
+        - Value: absolute or relative xpath of the child node
+        '''
+
+        if not relative and root_ET is None:
+            log('### ERROR: root node ET must be specified to compute absolute path.')
+            return
+
+        if relative:
+            root_ET = etree.ElementTree(node)
+
         return dict([(
-            md5(etree.tostring(c, method="c14n")).hexdigest(),
+            self._get_node_FP(c),
             root_ET.getpath(c)
         ) for c in node.iterchildren()])
 
-    def get_diff_children(self, node1, node2, root1_ET, root2_ET):
-        children_signs1 = self._get_children_signs(node1, root1_ET)
-        children_signs2 = self._get_children_signs(node2, root2_ET)
-        return [
-            children_signs2[s] for s in set(
-                children_signs2.keys()
+    def _align_N1_to_N2(self, mod, node1, node2, root1_ET=None, root2_ET=None, relative=False):
+        '''
+        Returns the List of xpath of node2 children which fingerprints
+        are not in the list of node1 children fingerprints.
+
+        Tries also to align number of children in node1 with node2
+        by cloning node2 children that are not in node1 and then
+        by inserting them in node1 at the same position.
+        '''
+
+        # Get List xpath of node2 children which fingerprints
+        # are not in the list of node1 children fingerprints
+        node1_children_FPs = self._get_children_FPs(node1, root1_ET, relative)
+        node2_children_FPs = self._get_children_FPs(node2, root2_ET, relative)
+
+        node2_added_children =  [
+            node2_children_FPs[fp] for fp in set(
+                node2_children_FPs.keys()
             ).difference(
-                children_signs1.keys()
+                node1_children_FPs.keys()
             )
         ]
 
+        # If possible, clone each node2 child missing in node1
+        # and insert it in node1 at same location
+        if len(node2_added_children) == len(node2) - len(node1):
+            parent = node2.getparent()
+            for path in sorted(node2_added_children):
+                node2_child = parent.find('.' + path)
+                idx = node2.index(node2_child)
+                node2_child.set('mod', mod)
+                node1.insert(idx, copy.deepcopy(node2_child))
+        #else:
+            #for n in range(len(node2) - len(node1)):
+            #    e = etree.SubElement(node1, node1[-1].tag, {'mod': 'del'})
+
+        return node2_added_children
+
+    def _get_xpath_N2_matching_N1(self, node1, node2_FP):
+        '''
+        Returns xpath String of node1 sibling which fingerprint
+        is same as node1 fingerprint,
+        or None if node1 is root or no indentical sibling is found.
+        '''
+
+        parent = node1.getparent()
+        if parent is None:
+            return None
+
+        parent_ET = etree.ElementTree(parent)
+
+        for sibling in parent.iterchildren():
+            if node2_FP == self._get_node_FP(sibling):
+                return parent_ET.getpath(sibling)
+
+        return None
+
     def diff(self, old, new):
-        sign1 = md5(etree.tostring(old, method="c14n")).hexdigest()
-        sign2 = md5(etree.tostring(new, method="c14n")).hexdigest()
-        if sign1 != sign2:
-            diff_kinds = set()
-            del_children = []
-            ins_children = []
-            sibling_matches = []
+        '''
+        Compare two elementTree objects, recursively starting from root node.
+        '''
 
-            if old.tag != new.tag:
-                diff_kinds['name'] = True
-            else:
-                attrs1 = self.get_attrs_str(old)
-                attrs2 = self.get_attrs_str(new)
-                if attrs1 != attrs2:
-                    diff_kinds.add('attrs')
+        old_FP = self._get_node_FP(old)
+        new_FP = self._get_node_FP(new)
 
-                if old.tag in self.dt_conf['mixed_elts']:
-                    diff_kinds.add('txt')
-
-                if len(old) > len(new):
-                    # Attempt to find children deleted from old tree
-                    del_children.extend(
-                        self.get_diff_children(
-                            new, old,
-                            etree.ElementTree(new),
-                            etree.ElementTree(old)
-                        )
-                    )
-                    # If possible, clone each deleted node and insert it
-                    # in new tree at same location with attr mod=del
-                    if len(del_children) != len(old) - len(new):
-                        diff_kinds.add('struct')
-                        #for n in range(len(old) - len(new)):
-                        #    e = etree.SubElement(new, new[-1].tag, {'mod': 'del'})
-                    else:
-                        for path in sorted(del_children):
-                            old_elt = old.getparent().find('.' + path)
-                            idx = old.index(old_elt)
-                            clone = copy.deepcopy(old_elt)
-                            clone.set('mod', 'del')
-                            new.insert(idx, clone)
-
-                elif len(old) < len(new):
-                    # Attempt to find children inserted in new tree
-                    ins_children.extend(
-                        self.get_diff_children(
-                            old, new,
-                            etree.ElementTree(old),
-                            etree.ElementTree(new)
-                        )
-                    )
-                    # If possible, set attr mod=ins to each inserted node, 
-                    # clone and insert it in old tree at same location
-                    if len(ins_children) != len(new) - len(old):
-                        diff_kinds.add('struct')
-                    else:
-                        for path in sorted(ins_children):
-                            new_elt = new.getparent().find('.' + path)
-                            idx = new.index(new_elt)
-                            clone = copy.deepcopy(new_elt)
-                            new_elt.set('mod', 'ins')
-                            old.insert(idx, clone)
-
-            if old.getparent() is not None:
-                for new_test in new.getparent().iterchildren():
-                    if sign1 == md5(etree.tostring(new_test, method="c14n")).hexdigest():
-                        parent_ET = etree.ElementTree(new.getparent())
-                        sibling_matches.append("Found old elsewhere in new parent: " + parent_ET.getpath(new_test))
-                        break
-                for old_test in old.getparent().iterchildren():
-                    if sign2 == md5(etree.tostring(old_test, method="c14n")).hexdigest():
-                        parent_ET = etree.ElementTree(old.getparent())
-                        sibling_matches.append("Found new elsewhere in old parent: " + parent_ET.getpath(old_test))
-                        break
-                if sibling_matches:
-                    diff_kinds.add('struct')
-
-            if diff_kinds:
-                print "\n<<<<<"
-                print self.old_root_ET.getpath(old)
-                print self.new_root_ET.getpath(new)
-
-                if 'name' in diff_kinds:
-                    print new.tag
-
-                if 'attrs' in diff_kinds:
-                    print attrs1
-                    print attrs2
-
-                if 'struct' in diff_kinds:
-                    if len(old) != len(new):
-                        print len(old)
-                        print len(new)
-                    if del_children: print 'DEL from old:\n' + '\n'.join(sorted(del_children))
-                    if ins_children: print 'INS in new:\n' + '\n'.join(sorted(ins_children))
-                    if sibling_matches: print '\n'.join(sibling_matches)
-
-                if 'txt' in diff_kinds:
-                    print etree.tostring(old, method="c14n")
-                    print etree.tostring(new, method="c14n")
-
-                print ">>>>>\n"
-            else:
-                print self.old_root_ET.getpath(old)
-        else:
+        # Check node fingerprints
+        if new_FP == old_FP:
+            # Node need to compare descendants if node are indentical
             return
+
+        diff_kinds = set()
+        del_children = None
+        ins_children = None
+
+        if new.tag != old.tag:
+            diff_kinds['name'] = True
+        else:
+            attrs1 = self._get_attrs_str(old)
+            attrs2 = self._get_attrs_str(new)
+            if attrs1 != attrs2:
+                diff_kinds.add('attrs')
+
+            if old.tag in self.dt_conf['mixed_elts']:
+                diff_kinds.add('txt')
+
+            relative_path=True
+
+            if len(old) > len(new):
+                # Search children deleted from old tree and try to align trees
+                del_children = self._align_N1_to_N2(
+                    'del',
+                    new, old,
+                    self.new_root_ET, self.old_root_ET,
+                    relative_path
+                )
+
+            elif len(old) < len(new):
+                # Search children inserted in new tree and try to align trees
+                ins_children = self._align_N1_to_N2(
+                    'ins',
+                    old, new,
+                    self.old_root_ET, self.new_root_ET,
+                    relative_path
+                )
+
+        old_sibling_matches = self._get_xpath_N2_matching_N1(new, old_FP)
+        new_sibling_matches = self._get_xpath_N2_matching_N1(old, new_FP)
+
+        if del_children or ins_children or old_sibling_matches or new_sibling_matches:
+            diff_kinds.add('struct')
+
+        if diff_kinds:
+            print "\n<<<<<"
+            print self.old_root_ET.getpath(old)
+            print self.new_root_ET.getpath(new)
+
+            if 'name' in diff_kinds:
+                print new.tag
+
+            if 'attrs' in diff_kinds:
+                print attrs1
+                print attrs2
+
+            if 'struct' in diff_kinds:
+                if len(old) != len(new):
+                    print len(old)
+                    print len(new)
+                if del_children: print 'DEL from old:\n' + '\n'.join(sorted(del_children))
+                if ins_children: print 'INS in new:\n' + '\n'.join(sorted(ins_children))
+                if old_sibling_matches:
+                    print 'Found old elsewhere in new parent: ' + old_sibling_matches
+                if new_sibling_matches:
+                    print 'Found new elsewhere in old parent: ' + new_sibling_matches
+
+            if 'txt' in diff_kinds:
+                print etree.tostring(old, method="c14n")
+                print etree.tostring(new, method="c14n")
+
+            print ">>>>>\n"
+        else:
+            print self.old_root_ET.getpath(old)
 
         if old.tag not in self.dt_conf['mixed_elts']:
             for nodes in zip(old.iterchildren(), new.iterchildren()):
