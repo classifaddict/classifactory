@@ -118,6 +118,7 @@ DOCTYPES = {
         'data_path': Template('ITOS/IPC/data/$version/ipcr_scheme_and_figures'),
         'zip_name': Template('ipcr_scheme_$version$release.zip'),
         'xml_name': Template('ipcr_scheme_$version$release.xml'),
+        'root': 'ipcEdition',
         'main_elts': ['revisionPeriods', 'ipcEntry'],
         'remove_elts': ['fr'],
         'main_attrs': ['symbol', 'kind'],
