@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE revisionPeriods SYSTEM "ipcr_scheme_1-02.dtd">
+<revisionPeriods><revisionPeriod>
+<ipcEdition edition="20160101" ipcLevel="a" documentRoot="">
+<en>
+   <staticIpc lang="EN" documentRoot="">
+      <ipcEntry kind="s" symbol="A" ipcLevel="A" entryType="K" lang="EN">
+         <textBody>
+            <title>
+               <titlePart>
+                  <text>SECTION A <emdash/> HUMAN NECESSITIES</text>
+               </titlePart>
+            </title>
+         </textBody>
+         <ipcEntry kind="t" symbol="A01" ipcLevel="A" entryType="K" lang="EN">
+            <textBody>
+               <title>
+                  <titlePart>
+                     <text>AGRICULTURE</text>
+                  </titlePart>
+               </title>
+            </textBody>
+         </ipcEntry>
+         <ipcEntry kind="c" symbol="A01" ipcLevel="A" entryType="K" lang="EN">
+            <textBody>
+               <title>
+                  <titlePart>
+                     <text>AGRICULTURE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>FORESTRY</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>ANIMAL HUSBANDRY</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>HUNTING</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>TRAPPING</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>FISHING</text>
+                  </titlePart>
+               </title>
+            </textBody>
+            <ipcEntry kind="u" symbol="A01B" ipcLevel="A" entryType="K" lang="EN">
+               <textBody>
+                  <title>
+                     <titlePart>
+                        <text>SOIL WORKING IN AGRICULTURE OR FORESTRY</text>
+                     </titlePart>
+                     <titlePart>
+                        <text>PARTS, DETAILS, OR ACCESSORIES OF AGRICULTURAL MACHINES OR IMPLEMENTS, IN GENERAL</text>
+                        <entryReference>making or covering furrows or holes for sowing, planting or manuring <sref ref="A01C0005000000"/></entryReference>
+                        <entryReference>machines for harvesting root crops <sref ref="A01D"/></entryReference>
+                        <entryReference>mowers convertible to soil working apparatus or capable of soil working <sref ref="A01D0042040000"/></entryReference>
+                        <entryReference>mowers combined with soil working implements <sref ref="A01D0043120000"/></entryReference>
+                        <entryReference>soil working for engineering purposes <sref ref="E01"/>, <sref ref="E02"/>, <sref ref="E21"/></entryReference>
+                     </titlePart>
+                  </title>
+               </textBody>
+               <ipcEntry kind="m" symbol="A01B0001000000" ipcLevel="A" entryType="K" lang="EN">
+                  <textBody>
+                     <title>
+                        <titlePart>
+                           <text>Text 1</text>
+                        </titlePart>
+                     </title>
+                  </textBody>
+               </ipcEntry>
+               <ipcEntry kind="m" symbol="A01B0002000000" ipcLevel="A" entryType="K" lang="EN">
+                  <textBody>
+                     <title>
+                        <titlePart>
+                           <text>Text 2</text>
+                        </titlePart>
+                     </title>
+                  </textBody>
+               </ipcEntry>
+               <ipcEntry kind="m" symbol="A01B0003000000" ipcLevel="A" entryType="K" lang="EN">
+                  <textBody>
+                     <title>
+                        <titlePart>
+                           <text>Text 3</text>
+                        </titlePart>
+                     </title>
+                  </textBody>
+               </ipcEntry>
+            </ipcEntry>
+         </ipcEntry>
+      </ipcEntry>
+   </staticIpc>
+</en>
+<fr>
+   <staticIpc lang="FR" documentRoot="">
+      <ipcEntry kind="s" symbol="A" ipcLevel="A" entryType="K" lang="FR">
+         <textBody>
+            <title>
+               <titlePart>
+                  <text>SECTION A <emdash/> NÉCESSITÉS COURANTES DE LA VIE</text>
+               </titlePart>
+            </title>
+         </textBody>
+         <ipcEntry kind="t" symbol="A01" ipcLevel="A" entryType="K" lang="FR">
+            <textBody>
+               <title>
+                  <titlePart>
+                     <text>ACTIVITÉS RURALES</text>
+                  </titlePart>
+               </title>
+            </textBody>
+         </ipcEntry>
+         <ipcEntry kind="c" symbol="A01" ipcLevel="A" entryType="K" lang="FR">
+            <textBody>
+               <title>
+                  <titlePart>
+                     <text>AGRICULTURE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>SYLVICULTURE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>ÉLEVAGE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>CHASSE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>PIÉGEAGE</text>
+                  </titlePart>
+                  <titlePart>
+                     <text>PÊCHE</text>
+                  </titlePart>
+               </title>
+            </textBody>
+            <ipcEntry kind="u" symbol="A01B" ipcLevel="A" entryType="K" lang="FR">
+               <textBody>
+                  <title>
+                     <titlePart>
+                        <text>TRAVAIL DE LA TERRE EN AGRICULTURE OU EN SYLVICULTURE</text>
+                     </titlePart>
+                     <titlePart>
+                        <text>PARTIES CONSTITUTIVES OU ACCESSOIRES DES MACHINES OU INSTRUMENTS AGRICOLES, EN GÉNÉRAL</text>
+                        <entryReference>ouverture ou recouvrement de sillons ou de trous pour ensemencement, plantation ou fumage <sref ref="A01C0005000000"/></entryReference>
+                        <entryReference>machines pour la récolte des racines ou tubercules <sref ref="A01D"/></entryReference>
+                        <entryReference>faucheuses convertibles en appareils de travail de la terre ou capables de travailler la terre <sref ref="A01D0042040000"/></entryReference>
+                        <entryReference>faucheuses combinées avec des instruments de travail de la terre <sref ref="A01D0043120000"/></entryReference>
+                        <entryReference>travail de la terre pour travaux publics ou exploitations minières <sref ref="E01"/>, <sref ref="E02"/>, <sref ref="E21"/></entryReference>
+                     </titlePart>
+                  </title>
+               </textBody>
+            </ipcEntry>
+         </ipcEntry>
+      </ipcEntry>
+   </staticIpc>
+</fr>
+</ipcEdition>
+</revisionPeriod></revisionPeriods>
