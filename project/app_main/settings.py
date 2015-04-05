@@ -98,7 +98,7 @@ try:
     DATABASES['default'] =  dj_database_url.config()
     STATIC_ROOT = 'staticfiles'
     STATICFILES_DIRS = (
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'),
+        os.path.join(BASE_DIR, 'app_tree', 'static'),
     )
 except:
     pass
