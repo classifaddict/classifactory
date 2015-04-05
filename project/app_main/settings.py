@@ -73,12 +73,6 @@ DATABASES = {
     }
 }
 
-try:
-    import dj_database_url
-    DATABASES['default'] =  dj_database_url.config()
-except:
-    pass
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -97,6 +91,17 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
+
+try:
+    # Heroku specific settings
+    import dj_database_url
+    DATABASES['default'] =  dj_database_url.config()
+    STATIC_ROOT = 'staticfiles'
+    STATICFILES_DIRS = (
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'),
+    )
+except:
+    pass
 
 # Dependencies settings
 
