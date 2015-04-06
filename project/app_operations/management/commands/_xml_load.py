@@ -67,6 +67,7 @@ class XMLTreeLoader:
         )])
 
         self.elts = {}
+        self.elt_FPs = {}
 
         log('Cleaning up...')
         self.cleanup(root)
@@ -250,6 +251,13 @@ class XMLTreeLoader:
         ))
         return text_name
 
+    def get_elt_FP(self, node):
+        '''
+        Returns a String made of MD5 hex digest of an element canonized subtree
+        '''
+
+        return md5(etree.tostring(node, method="c14n")).hexdigest()
+
     def collect_elt_values(self, e, tag, text_name, attrs, new_elts_values):
         attrs_key = ''
         if attrs:
@@ -264,9 +272,9 @@ class XMLTreeLoader:
 
         self.elt_values.add(values)
 
-        # Store element keys in ElementTree node so that element object
+        # Store element keys so that element object
         # that will be created can be retrieved when building tree
-        e.set('eltkey4node', '_'.join(values))
+        self.elt_FPs[self.get_elt_FP(e)] = '_'.join(values)
 
     @with_connection_usable
     def store_treeleaves(self, root):
@@ -397,10 +405,12 @@ class XMLTreeLoader:
     def store_treenode(self, elt, parent=None):
         # Attach retrieved leaf element to a new treenode
         # Leaf element is retrieved by keys collected during leaves storage
+        fingerprint = self.get_elt_FP(elt)
         treenode = TreeNode(
             parent=parent,
+            fingerprint=fingerprint,
             dataset=self.dataset,
-            element_id=self.elts[elt.get('eltkey4node')]
+            element_id=self.elts[self.elt_FPs[fingerprint]]
         )
         treenode.save()
 

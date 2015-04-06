@@ -140,6 +140,7 @@ class Diff(models.Model):
 
 class TreeNode(MPTTModel):
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children')
+    fingerprint = models.CharField(max_length=32)
     element = models.ForeignKey('Element', related_name='treenodes')
     dataset = models.ForeignKey('Dataset', related_name='treenodes')
     is_diff_only = models.BooleanField(default=False)

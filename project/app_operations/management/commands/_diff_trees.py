@@ -176,7 +176,7 @@ class DiffTrees:
         new_path = self.new_root_ET.getpath(new)
 
         if new.tag != old.tag:
-            self.diff_record(new, 'name')
+            self.diff_record(new, 'type')
 
             DEBUG([new_path, old_path])
 
@@ -187,6 +187,11 @@ class DiffTrees:
         new_attrs = self._get_attrs_str(new)
         if old_attrs != new_attrs:
             self.diff_record(new, 'attrs')
+
+            DEBUG([new_path, new_attrs, old_attrs])
+
+            # No need to compare descendants if nodes have different attribute values
+            return
 
         if old.tag in self.dt_conf['mixed_elts']:
             self.diff_record(new, 'txt')
@@ -200,14 +205,7 @@ class DiffTrees:
             # No need to compare descendants if nodes have mixed contents
             return
 
-        if old_attrs != new_attrs:
-            DEBUG([
-                new_path,
-                old_attrs,
-                new_attrs
-            ])
-        else:
-            print new_path
+        print new_path
 
         relative_path=True
 
