@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
     <script src="http://cdn.jsdelivr.net/jquery/1.11.2/jquery.min.js"></script>
     <script src="http://cdn.jsdelivr.net/jquery.ui/1.11.3/jquery-ui.min.js"></script>
-    <link href="http://cdn.jsdelivr.net/jquery.fancytree/2.8.1/skin-win7/ui.fancytree.min.css" rel="stylesheet" type="text/css">
+    <link href="http://cdn.jsdelivr.net/jquery.fancytree/2.8.1/skin-xp/ui.fancytree.min.css" rel="stylesheet" type="text/css">
     <script src="http://cdn.jsdelivr.net/jquery.fancytree/2.8.1/jquery.fancytree-all.min.js"></script>
     <!--script src="{% static "jquery.min.js" %}"></script>
     <script src="{% static "jquery-ui.min.js" %}"></script>
@@ -29,13 +29,8 @@
             z-index: 256;
         }
 
-        table {
-            border-collapse: collapse;
-            border-spacing: 0;
+        div#tree {
             margin-top: 100px;
-        }
-        td {
-            vertical-align: top;
         }
         dl {
             margin: 0;
@@ -65,23 +60,20 @@
             margin: 0 0 0 80px;
             display: block;
         }
-        td.mod span {
+        span.mod span {
             color: orange;
         }
-        ins, td.ins span, td.ins dl dd {
+        ins, span.ins span, span.ins dl dd {
             color: green;
             text-decoration: none;
         }
-        del, td.del span, td.del dl dd {
+        del, span.del span, span.del dl dd {
             color: red;
             text-decoration: line-through;
         }
-        /*table.fancytree-ext-table tbody tr td {
-            border: 0 none transparent;
-        }*/
-        ul.fancytree-container ul {
-            padding: 0 0 0 0;
-        }
+          span.fancytree-title {
+            white-space: normal;
+          }
     </style>
     <script>
     $(function(){
@@ -93,7 +85,7 @@
             lazyLoad: function(event, data){
                 var node = data.node;
                 data.result = {
-                    url: "{% url 'home' %}table/" + node.key + "/",
+                    url: "{% url 'home' %}tree/" + node.key + "/",
                     cache: false
                 };
             },
@@ -102,32 +94,22 @@
             autoActivate: true, // Automatically activate a node when it is focused (using keys).
             icons: false,
             debugLevel: 2, // 0:quiet, 1:normal, 2:debug
-            extensions: ["table"],
             scrollParent: $(window),
-            table: {
-                indentation: 10,
-                nodeColumnIdx: 0
-            },
-            renderColumns: function(event, data) {
+            renderNode: function(event, data) {
                 var node = data.node;
-                $tdList = $(node.tr).find(">td");
 
                 if (node.data.diff_kind) {
-                    $tdList.eq(0).addClass(node.data.diff_kind);
+                    $(node).find('>span').addClass(node.data.diff_kind);
                 }
 
-                if (node.data.attrs_diff) $tdList.eq(1).html(node.data.attrs_diff);
-                else if (node.data.attrs) $tdList.eq(1).html(node.data.attrs);
+                if (node.data.attrs_diff) $(node).find('>span').html(node.data.attrs_diff);
 
-                if (node.data.text_diff) $tdList.eq(2).html(node.data.text_diff);
-                else if (node.data.text) $tdList.eq(2).html(node.data.text);
+                if (node.data.text_diff) $(node).find('>span').html(node.data.text_diff);
             },
             click: function(event, data) {
-                // data.targetType is undefined when clicked column is not the main node one
-                if (!data.targetType) {
-                    $tdList = $(data.node.tr).find(">td");
-                    $tdList.eq(1).find(">dl").toggleClass('showattr');
-                }
+                //if (!data.targetType) {
+                    $(data.node).find("dl").toggleClass('showattr');
+                //}
             }
         });
 
@@ -240,18 +222,7 @@
     </form>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="showattrs">Show Attributes</button><button id="hideattrs">Hide Attributes</button>
     </div>
-    <table id="tree" width="100%">
-        <colgroup>
-            <col style="width: 300px;">
-            <col style="width: 200px;">
-            <col style="width: 1*;">
-            <col style="width: 1*;">
-        </colgroup>
-        <thead>
-            <tr><th>ELEMENT</th> <th>ATTRIBUTES</th> <th>TEXT</th> <!--th>TEXT 2</th--> </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <div id="tree">
+    </div>
 </body>
 </html>

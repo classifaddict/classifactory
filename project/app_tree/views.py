@@ -6,11 +6,18 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.renderers import JSONRenderer
 
 from models import TreeNode
-from serializers import ElementSerializer, ChildFancySerializer, ChildDiffFancySerializer,KeySerializer, PaginatedKeySerializer
+from serializers import ElementSerializer, ChildFancyNoTableSerializer, ChildDiffFancySerializer,KeySerializer, PaginatedKeySerializer
 
 
 def home(request):
     return render(request, 'fancy_index.html')
+
+
+def mode(request, mode):
+    if mode == 'table':
+        return render(request, 'fancy_index.html')
+    else:
+        return render(request, 'fancy_notable_index.html')
 
 
 class JSONResponse(HttpResponse):
@@ -64,7 +71,7 @@ def element_fancy_roots(request):
 
 
 @csrf_exempt
-def element_fancy_children(request, pk):
+def element_fancy_children(request, mode, pk):
     """
     List all children of an element as FancyTree nodes.
     """
@@ -73,7 +80,10 @@ def element_fancy_children(request, pk):
         treenode = TreeNode.objects.select_related('element').prefetch_related(
             'element__attributes'
         ).filter(parent=pk)
-        serializer = ChildDiffFancySerializer(treenode, many=True)
+        if mode == 'table':
+            serializer = ChildDiffFancySerializer(treenode, many=True)
+        else:
+            serializer = ChildFancyNoTableSerializer(treenode, many=True)
         return JSONResponse(serializer.data)
 
 

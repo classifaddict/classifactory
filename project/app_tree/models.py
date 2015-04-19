@@ -115,6 +115,12 @@ class Element(models.Model):
             )
         return ''
 
+    def values(self):
+        texts = ''
+        if self.text is not None and self.text.texts_html() != '':
+            texts = ': ' + self.text.texts_html()
+        return self.type.name + self.attributes_html() + texts
+
     def __unicode__(self):
         return self.type.name
 

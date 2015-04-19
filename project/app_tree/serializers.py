@@ -67,3 +67,7 @@ class ChildDiffFancySerializer(ChildFancySerializer):
     text_diff = serializers.CharField()
     attrs_diff = serializers.CharField()
     diff_kind = serializers.CharField()
+
+
+class ChildFancyNoTableSerializer(ChildDiffFancySerializer):
+    title = serializers.CharField(source='element.values')
