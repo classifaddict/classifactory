@@ -84,11 +84,14 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        # 'ENGINE': 'django.db.backends.mysql',
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'classifactory',
-        'USER': 'classifactory',
-        'PASSWORD': 'c',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tree',
+        'USER': 'tree',
+        'PASSWORD': 'tree',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': 'classifactory',
+        # 'USER': 'classifactory',
+        # 'PASSWORD': 'c',
     }
 }
 
@@ -167,6 +170,7 @@ DOCTYPES = {
         'data_path': Template('ITOS/NICE/data/$version/indications'),
         'zip_name': Template('$version-indications-$release.zip'),
         'xml_name': Template('$version-$lang-indications-$release.xml'),
+        'root': 'nice:Indications',
         'main_elts': ['nice:Indications', 'nice:GoodOrService'],
         'remove_elts': [],
         'main_attrs': ['basicNumber', 'dateInForce'],
@@ -183,10 +187,38 @@ DOCTYPES = {
             'nice:SortExpression', 'nice:AlternateSortExpression'
         ]
     },
+    'nice_information_files': {
+        'data_path': Template('ITOS/NICE/data/$version/information_files'),
+        'zip_name': Template('$version-information_files-$release.zip'),
+        'xml_name': Template('$version-$lang-information_files-$release.xml'),
+        'root': 'nice:InformationFiles',
+        'main_elts': [
+            'nice:InformationFiles', 'nice:ClassAnalysis',
+            'nice:HierarchyGroupAnalysis', 'nice:GoodOrService'
+        ],
+        'remove_elts': [],
+        'main_attrs': ['classNumber', 'groupNumber', 'basicNumber', 'dateInForce'],
+        'skip_attrs': [],
+        'remove_attrs': ['xsi:schemaLocation'],
+        'remove_attrs_val': [],
+        'mixed_elts': [
+            'nice:P', 'nice:ClassificationCriteria', 'nice:Label', 'nice:Comment'
+        ],
+        'container_elts': [
+            'nice:InformationFiles', 'nice:Classes', 'nice:ClassAnalysis',
+            'nice:GoodsAndServices', 'nice:GoodOrService',
+            'nice:HierarchyGroup', 'nice:HierarchyGroupAnalysis',
+            'nice:Definition', 'nice:DefinitionText', 'nice:DefinitionIllustrations',
+            'nice:ClassificationCriteria',
+            'nice:RelatedExamples', 'nice:RelatedItem', 'nice:Label', 'nice:Comment'
+            'nice:P'
+        ]
+    },
     'nice_classes': {
         'data_path': Template('ITOS/NICE/data/$version/class_headings_and_explanatory_notes'),
         'zip_name': Template('$version-class_headings_and_explanatory_notes-$release.zip'),
         'xml_name': Template('$version-$lang-class_headings_and_explanatory_notes-$release.xml'),
+        'root': 'nice:ClassHeadingsExplanatoryNotes',
         'main_elts': ['nice:ClassHeadingsExplanatoryNotes', 'nice:Class'],
         'remove_elts': [],
         'main_attrs': ['classNumber', 'dateInForce'],

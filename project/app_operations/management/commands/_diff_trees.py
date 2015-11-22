@@ -30,6 +30,10 @@ class DiffTrees:
             remove_comments=True
         )
 
+        self.NSMAP = {}
+        self.NSpfx = ''
+        self.NS = ''
+
         old_root = self._get_tree_root(dataset_version1, file_release1, skip_attrs=self.dt_conf['skip_attrs'])
         self.old_root_ET = etree.ElementTree(old_root)
 
@@ -37,6 +41,11 @@ class DiffTrees:
         self.new_root_ET = etree.ElementTree(new_root)
 
         self.diff(old_root, new_root)
+
+    def tag(self, tagname):
+        # Replaces URI prefix by local prefix within qualified tag name
+        # e.g. {uri}tag => pfx:tag
+        return tagname.replace(self.NS, self.NSpfx)
 
     def diff_record(self, node, diff_type, old=False):
         if old:
@@ -47,7 +56,7 @@ class DiffTrees:
         if xpath in self.diffs:
             self.diffs[xpath].add(diff_type)
         else:
-             self.diffs[xpath] = set([diff_type])
+            self.diffs[xpath] = set([diff_type])
 
     def _cleanup(self, root, skip_attrs=[]):
         '''
@@ -99,8 +108,14 @@ class DiffTrees:
 
         tree = etree.parse(file_obj, self.parser)
         root = tree.getroot()
-        if root.tag != self.dt_conf['root']:
-            root = root.find('.//' + self.dt_conf['root'])
+
+        if root.prefix is not None:
+            self.NSMAP = root.nsmap
+            self.NSpfx = root.prefix + ":"
+            self.NS = "{%s}" % self.NSMAP[root.prefix]
+
+        if self.tag(root.tag) != self.dt_conf['root']:
+            root = root.find('.//' + self.dt_conf['root'], namespaces=self.NSMAP)
 
         for att in root.keys():
             root.attrib.pop(att)
