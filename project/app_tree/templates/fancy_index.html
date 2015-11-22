@@ -133,8 +133,8 @@
 
         $("#search").submit(function(event) {
             var query = $("input").val();
-            var url = "{% url 'home' %}search/"+query+'/';
-            get_pagination("Results", url, "");
+            var url = "{% url 'home' %}search/"+query+'/?page=1';
+            get_pagination("Results", url);
             event.preventDefault();
         });
 
@@ -156,29 +156,29 @@
 
         $("#diff").change(function(event) {
             var query = "ipc_scheme/20170101";
-            var url = "{% url 'home' %}diffs/"+query+'/';
-            get_pagination("Differences", url, "");
+            var url = "{% url 'home' %}diffs/"+query+'/?page=1';
+            get_pagination("Differences", url);
             event.preventDefault();
         });
 
     });
 
-    function insert_pg_button(target, base_url, page, icon) {
-        if (page) {
-            var params = "'"+target+"', '"+base_url+"', '"+page+"'";
+    function insert_pg_button(target, url, icon) {
+        if (url) {
+            var params = "'"+target+"', '"+url+"'";
             $("#"+target).append('&nbsp;<a href="#" style="color: white;" onclick="javascript:get_pagination('+params+');">'+icon+';</a>');
         } else {
         	$("#"+target).append('&nbsp;'+icon);
         }
     }
 
-    function get_pagination(target, base_url, page) {
-        $.getJSON(base_url+page, function(data) {
+    function get_pagination(target, url) {
+        $.getJSON(url, function(data) {
             $("#"+target).empty();
             //$("#"+target).append('&nbsp;'+target+': ');
             if (data.count > 0) {
-	            insert_pg_button(target, base_url, data.previous, '&lt');
-	            insert_pg_button(target, base_url, data.next, '&gt');
+	            insert_pg_button(target, data.previous, '&lt');
+	            insert_pg_button(target, data.next, '&gt');
 	            var pg_len = 1;
 	            var x = 0;
 	            if (data.previous) x = parseInt(data.previous.substr(6)) * pg_len;

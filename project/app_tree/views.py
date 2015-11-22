@@ -4,10 +4,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rest_framework.renderers import JSONRenderer
+from rest_framework.decorators import api_view, permission_classes
 
 from models import TreeNode
-from serializers import ElementSerializer, ChildFancyNoTableSerializer, ChildDiffFancySerializer,KeySerializer, PaginatedKeySerializer
-
+from serializers import ElementSerializer, ChildFancyNoTableSerializer, ChildDiffFancySerializer, KeySerializer#, PaginatedKeySerializer
+from rest_framework.pagination import PageNumberPagination
 
 def home(request):
     return render(request, 'fancy_index.html')
@@ -108,6 +109,7 @@ def element_fancy_ancestors(request, pk):
 
 
 @csrf_exempt
+@api_view(['GET'])
 def element_fancy_search(request, query):
     """
     List all ancestors' pk of the first element found.
@@ -189,23 +191,16 @@ def element_fancy_search(request, query):
                 element__type__name=param
             )
 
-    paginator = Paginator(queryset, 1)
-    page = request.GET.get('page')
-    try:
-        diffs = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        diffs = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999),
-        # deliver last page of results.
-        diffs = paginator.page(paginator.num_pages)
+    paginator = PageNumberPagination()
+    paginator.page_size = 1
 
-    serializer = PaginatedKeySerializer(diffs)
+    result_page = paginator.paginate_queryset(queryset, request)
+    serializer = KeySerializer(result_page, many=True)
 
-    return JSONResponse(serializer.data)
+    return paginator.get_paginated_response(serializer.data)
 
 
+@api_view(['GET'])
 def diffs(request, doctype_name, dataset_name):
     queryset = TreeNode.objects.select_related(
         'dataset', 'tree2_diffs'
@@ -215,18 +210,10 @@ def diffs(request, doctype_name, dataset_name):
         tree2_diffs__isnull=False
     )
 
-    paginator = Paginator(queryset, 1)
-    page = request.GET.get('page')
-    try:
-        diffs = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        diffs = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999),
-        # deliver last page of results.
-        diffs = paginator.page(paginator.num_pages)
+    paginator = PageNumberPagination()
+    paginator.page_size = 1
 
-    serializer = PaginatedKeySerializer(diffs)
+    result_page = paginator.paginate_queryset(queryset, request)
+    serializer = KeySerializer(result_page, many=True)
 
-    return JSONResponse(serializer.data)
+    return paginator.get_paginated_response(serializer.data)

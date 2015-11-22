@@ -44,9 +44,9 @@ class KeySerializer(serializers.Serializer):
     key = serializers.CharField(source='pk')
 
 
-class PaginatedKeySerializer(pagination.PaginationSerializer):
-    class Meta:
-        object_serializer_class = KeySerializer
+# class PaginatedKeySerializer(pagination.PaginationSerializer):
+#     class Meta:
+#         object_serializer_class = KeySerializer
 
 
 class ChildFancySerializer(KeySerializer):
