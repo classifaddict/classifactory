@@ -47,7 +47,7 @@ cat > /etc/httpd/conf.d/wsgi-tree.conf <<EOF
 Include $APP_DIR/httpd.conf
 EOF
 
-$VENV_DIR/bin/python project/manage.py syncdb --noinput
+$VENV_DIR/bin/python project/manage.py migrate --noinput
 $VENV_DIR/bin/python project/manage.py createsuperuser --username=tree --email=o@c.com
 $VENV_DIR/bin/python project/manage.py collectstatic --noinput
 

@@ -31,8 +31,8 @@ class AttributeType(AbstractType):
 
 class ElementType(AbstractType):
     doctype = models.ForeignKey('Doctype', related_name='element_types')
-    attributes = models.ManyToManyField('AttributeType', related_name='element_types', null=True, blank=True)
-    required_attr = models.ManyToManyField('AttributeType', null=True, blank=True)
+    attributes = models.ManyToManyField('AttributeType', related_name='element_types', blank=True)
+    required_attr = models.ManyToManyField('AttributeType', blank=True)
     is_main = models.BooleanField(default=False)
     is_mixed = models.BooleanField(default=False)
 
@@ -106,7 +106,7 @@ class Element(models.Model):
     text = models.ForeignKey('Text', null=True, blank=True)
     attrs_key = models.CharField(max_length=32, blank=True)
     main_attrs = models.CharField(max_length=32, blank=True)
-    attributes = models.ManyToManyField('Attribute', null=True, blank=True)
+    attributes = models.ManyToManyField('Attribute', blank=True)
 
     def attributes_html(self):
         if self.attributes.exists():
